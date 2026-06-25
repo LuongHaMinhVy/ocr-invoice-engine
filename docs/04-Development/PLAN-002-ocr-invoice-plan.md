@@ -6,7 +6,7 @@
 
 **Architecture:** A Next.js frontend allows users to upload invoice images, which are sent via REST to a Spring Boot backend. The backend forwards the image to the Gemini Vision API using a structured schema, validates calculations, stores the output in PostgreSQL, triggers a Hermes notification message, and returns the JSON to the client.
 
-**Tech Stack:** Java 21, Spring Boot 3.3.1, Gradle (Groovy DSL), PostgreSQL, Next.js 14+ (App Router), TypeScript, ESLint, Husky, Gemini API, Hermes MCP REST client, Stitch MCP.
+**Tech Stack:** Java 21, Spring Boot 3.3.1, Gradle (Groovy DSL), PostgreSQL, Next.js 14.2.x / 15.x (App Router), TypeScript, ESLint, Husky, Gemini API, Hermes MCP REST client, Stitch MCP.
 
 ---
 
