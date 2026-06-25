@@ -13,13 +13,13 @@
 ### Task 1: Add Spring Integration Mail Dependencies
 
 **Files:**
-- Modify: `backend/build.gradle` (or the root `build.gradle` depending on setup)
+- Modify: `apps/backend/build.gradle`
 
 **Step 1: Write the failing test / check dependency presence**
 Verify that the `spring-boot-starter-integration` and `spring-integration-mail` are not yet in the project.
 Run:
 ```powershell
-Select-String -Path backend/build.gradle -Pattern "spring-integration-mail"
+Select-String -Path apps/backend/build.gradle -Pattern "spring-integration-mail"
 ```
 Expected: Pattern not found / blank output.
 
@@ -39,7 +39,7 @@ Expected: BUILD SUCCESSFUL
 
 **Step 4: Commit**
 ```bash
-git add backend/build.gradle
+git add apps/backend/build.gradle
 git commit -m "feat: add Spring Integration Mail dependencies"
 ```
 
@@ -48,11 +48,11 @@ git commit -m "feat: add Spring Integration Mail dependencies"
 ### Task 2: Implement Mail Configuration and Mail Receiver Config
 
 **Files:**
-- Create: `backend/src/main/resources/application-mail.yml`
-- Create: `backend/src/main/java/com/example/ocr/config/MailReceiverConfig.java`
+- Create: `apps/backend/src/main/resources/application-mail.yml`
+- Create: `apps/backend/src/main/java/com/example/ocr/config/MailReceiverConfig.java`
 
 **Step 1: Write the failing test**
-Create a config test file `backend/src/test/java/com/example/ocr/config/MailReceiverConfigTest.java` that asserts the MailReceiver bean is initialized.
+Create a config test file `apps/backend/src/test/java/com/example/ocr/config/MailReceiverConfigTest.java` that asserts the MailReceiver bean is initialized.
 Run:
 ```powershell
 ./gradlew test --tests com.example.ocr.config.MailReceiverConfigTest
@@ -100,7 +100,7 @@ Expected: PASS
 
 **Step 4: Commit**
 ```bash
-git add backend/src/main/resources/application-mail.yml backend/src/main/java/com/example/ocr/config/MailReceiverConfig.java backend/src/test/java/com/example/ocr/config/MailReceiverConfigTest.java
+git add apps/backend/src/main/resources/application-mail.yml apps/backend/src/main/java/com/example/ocr/config/MailReceiverConfig.java apps/backend/src/test/java/com/example/ocr/config/MailReceiverConfigTest.java
 git commit -m "feat: configure IMAP mail flow configuration adapter"
 ```
 
@@ -109,8 +109,8 @@ git commit -m "feat: configure IMAP mail flow configuration adapter"
 ### Task 3: Implement EmailIntakeService and Attachment Extraction
 
 **Files:**
-- Create: `backend/src/main/java/com/example/ocr/service/EmailIntakeService.java`
-- Create: `backend/src/test/java/com/example/ocr/service/EmailIntakeServiceTest.java`
+- Create: `apps/backend/src/main/java/com/example/ocr/service/EmailIntakeService.java`
+- Create: `apps/backend/src/test/java/com/example/ocr/service/EmailIntakeServiceTest.java`
 
 **Step 1: Write failing test**
 Create a test that mocks `javax.mail.Message` containing a multipart body with a PDF attachment, and verifies that `EmailIntakeService.extractAttachments()` extracts it successfully.
@@ -168,7 +168,7 @@ Expected: PASS
 
 **Step 4: Commit**
 ```bash
-git add backend/src/main/java/com/example/ocr/service/EmailIntakeService.java backend/src/test/java/com/example/ocr/service/EmailIntakeServiceTest.java
+git add apps/backend/src/main/java/com/example/ocr/service/EmailIntakeService.java apps/backend/src/test/java/com/example/ocr/service/EmailIntakeServiceTest.java
 git commit -m "feat: implement email intake attachment extraction service"
 ```
 
