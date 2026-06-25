@@ -10,4 +10,8 @@
 | 6 | Final commit | ✅ done |
 | 7 | Create SPEC-002 Design Spec (OCR Invoice) | ✅ done |
 | 8 | Create SPEC-002 Implementation Plan (OCR Invoice) | ✅ done |
-| 9 | Reorganize project docs into standard Obsidian Vault | ⏳ todo |
+| 9 | Task 1: Create Standard Vault Folders | ⏳ todo |
+| 10 | Task 2: Relocate Initial Files and Current Design Docs | ⏳ todo |
+| 11 | Task 3: Update Project Conventions Skill to Enforce New Paths | ⏳ todo |
+| 12 | Task 4: Update Spec Approval Gate Skill to Validate New Paths | ⏳ todo |
+| 13 | Task 5: Fix Internal References in Relocated Docs | ⏳ todo |
