@@ -2,18 +2,19 @@
 
 > **For Antigravity:** REQUIRED WORKFLOW: Use `.agent/workflows/execute-plan.md` to execute this plan in single-flow mode.
 
-**Goal:** Build a monorepo containing a Spring Boot backend and a Next.js frontend to extract structured JSON data from invoice images using the Gemini Vision API.
+**Goal:** Build a monorepo containing a Spring Boot backend (Gradle Groovy, PostgreSQL) and a Next.js frontend (ESLint, Husky) that extracts structured JSON from invoice images using Gemini Vision API, with notifications routed to Hermes MCP and UI styling synchronized with Stitch MCP.
 
-**Architecture:** A Next.js frontend allows users to upload invoice images, which are sent via REST to a Spring Boot backend. The backend forwards the image to the Gemini Vision API using a structured schema and validates the mathematically calculated amounts before saving to PostgreSQL and returning the JSON to the client.
+**Architecture:** A Next.js frontend allows users to upload invoice images, which are sent via REST to a Spring Boot backend. The backend forwards the image to the Gemini Vision API using a structured schema, validates calculations, stores the output in PostgreSQL, triggers a Hermes notification message, and returns the JSON to the client.
 
-**Tech Stack:** Java 17+, Spring Boot 3.x, Maven, Next.js 14+ (App Router), TypeScript, Gemini API (Google AI Client / REST API).
+**Tech Stack:** Java 17+, Spring Boot 3.x, Gradle (Groovy DSL), PostgreSQL, Next.js 14+ (App Router), TypeScript, ESLint, Husky, Gemini API, Hermes MCP REST client, Stitch MCP.
 
 ---
 
-### Task 1: Initialize Backend Project Structure
+### Task 1: Initialize Backend Project Structure (Gradle Groovy)
 
 **Files:**
-- Create: `backend/pom.xml`
+- Create: `backend/build.gradle`
+- Create: `backend/settings.gradle`
 - Create: `backend/src/main/java/com/example/ocr/OcrApplication.java`
 - Create: `backend/src/main/resources/application.yml`
 - Test: `backend/src/test/java/com/example/ocr/OcrApplicationTests.java`
@@ -35,11 +36,42 @@ class OcrApplicationTests {
 ```
 
 **Step 2: Run test to verify it fails**
-Run: `mvn -f backend/pom.xml test`
-Expected: FAIL (because POM and Application files are not yet created or configured).
+Run: `cd backend && ./gradlew test` (or `gradlew.bat test` on Windows)
+Expected: FAIL (No build file or gradle wrapper).
 
 **Step 3: Write minimal implementation**
-Create `backend/pom.xml` with Spring Boot dependencies and `backend/src/main/java/com/example/ocr/OcrApplication.java`:
+Create `backend/build.gradle`:
+```groovy
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.2.5'
+    id 'io.spring.dependency-management' version '1.1.4'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '17'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    runtimeOnly 'org.postgresql:postgresql'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+```
+Create `backend/settings.gradle`:
+```groovy
+rootProject.name = 'ocr-backend'
+```
+Create `backend/src/main/java/com/example/ocr/OcrApplication.java`:
 ```java
 package com.example.ocr;
 
@@ -53,140 +85,106 @@ public class OcrApplication {
     }
 }
 ```
-Create `backend/src/main/resources/application.yml` with empty config.
+Create `backend/src/main/resources/application.yml` with dynamic H2/PostgreSQL config.
 
 **Step 4: Run test to verify it passes**
-Run: `mvn -f backend/pom.xml test`
-Expected: PASS (exit code 0, test context loads successfully).
+Run: `cd backend && gradle test` (or setup gradlew)
+Expected: PASS
 
 **Step 5: Commit**
 ```bash
 git add backend/
-git commit -m "feat: initialize backend spring boot project structure"
+git commit -m "feat: initialize backend spring boot project structure with gradle groovy"
 ```
 
 ---
 
-### Task 2: Create Basic Rest Controller (Ping Endpoint)
+### Task 2: Configure PostgreSQL Database & Entity
 
 **Files:**
-- Create: `backend/src/main/java/com/example/ocr/controller/PingController.java`
-- Test: `backend/src/test/java/com/example/ocr/controller/PingControllerTest.java`
+- Create: `backend/src/main/java/com/example/ocr/model/Invoice.java`
+- Create: `backend/src/main/java/com/example/ocr/repository/InvoiceRepository.java`
+- Modify: `backend/src/main/resources/application.yml`
+- Test: `backend/src/test/java/com/example/ocr/repository/InvoiceRepositoryTest.java`
 
-**Step 1: Write the failing test**
-Create `backend/src/test/java/com/example/ocr/controller/PingControllerTest.java`:
+**Step 1: Write a failing repository test**
+Create `backend/src/test/java/com/example/ocr/repository/InvoiceRepositoryTest.java` testing invoice saving:
 ```java
-package com.example.ocr.controller;
+package com.example.ocr.repository;
 
+import com.example.ocr.model.Invoice;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import static org.junit.jupiter.api.Assertions.*;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-@WebMvcTest(PingController.class)
-class PingControllerTest {
+@DataJpaTest
+class InvoiceRepositoryTest {
     @Autowired
-    private MockMvc mockMvc;
+    private InvoiceRepository repository;
 
     @Test
-    void testPing() throws Exception {
-        mockMvc.perform(get("/api/ping"))
-            .andExpect(status().isOk())
-            .andExpect(content().string("pong"));
+    void testSaveInvoice() {
+        Invoice invoice = new Invoice();
+        invoice.setVendor("Test Vendor");
+        invoice.setTotal(150000.0);
+        Invoice saved = repository.save(invoice);
+        assertNotNull(saved.getId());
     }
 }
 ```
 
 **Step 2: Run test to verify it fails**
-Run: `mvn -f backend/pom.xml test -Dtest=PingControllerTest`
-Expected: FAIL (Compilation error or 404 because controller doesn't exist).
+Run: `cd backend && gradle test --tests "com.example.ocr.repository.InvoiceRepositoryTest"`
+Expected: FAIL (Compilation error - missing Entity/Repository classes).
 
 **Step 3: Write minimal implementation**
-Create `backend/src/main/java/com/example/ocr/controller/PingController.java`:
-```java
-package com.example.ocr.controller;
-
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-@RestController
-@RequestMapping("/api")
-public class PingController {
-    @GetMapping("/ping")
-    public String ping() {
-        return "pong";
-    }
-}
-```
+Create Entity `backend/src/main/java/com/example/ocr/model/Invoice.java` (using JPA annotations `@Entity`, `@Id`, `@GeneratedValue`) and Repository `backend/src/main/java/com/example/ocr/repository/InvoiceRepository.java`.
+Configure local H2 database for tests and PostgreSQL parameters in `application.yml`.
 
 **Step 4: Run test to verify it passes**
-Run: `mvn -f backend/pom.xml test -Dtest=PingControllerTest`
+Run: `cd backend && gradle test --tests "com.example.ocr.repository.InvoiceRepositoryTest"`
 Expected: PASS
 
 **Step 5: Commit**
 ```bash
-git add backend/src/main/java/com/example/ocr/controller/PingController.java backend/src/test/java/com/example/ocr/controller/PingControllerTest.java
-git commit -m "feat: add basic ping endpoint"
+git add backend/src/main/java/com/example/ocr/model/Invoice.java backend/src/main/java/com/example/ocr/repository/InvoiceRepository.java backend/src/main/resources/application.yml
+git commit -m "feat: configure postgresql entity and repository"
 ```
 
 ---
 
-### Task 3: Initialize Next.js Frontend Project Structure
+### Task 3: Initialize Next.js Frontend with ESLint & Husky
 
 **Files:**
 - Create: `frontend/package.json`
-- Create: `frontend/tsconfig.json`
+- Create: `frontend/.eslintrc.json`
+- Create: `frontend/.husky/pre-commit`
 - Create: `frontend/src/app/page.tsx`
-- Create: `frontend/src/app/layout.tsx`
 
-**Step 1: Write a failing test**
-Create a small smoke test in `frontend/src/app/page.test.tsx` (using Jest/Vitest or simple script validation if test runner not ready):
-```typescript
-import { render, screen } from '@testing-library/react';
-import Page from './page';
+**Step 1: Write a failing validation check**
+Verify ESLint config exists and runs:
+Run: `npm --prefix frontend run lint`
+Expected: FAIL (missing eslint configuration or dependency packages).
 
-test('renders OCR header', () => {
-  render(<Page />);
-  expect(screen.getByText(/OCR Invoice Processing/i)).toBeInTheDocument();
-});
-```
+**Step 2: Scaffold Next.js project with ESLint & Husky**
+Run template setups.
+Initialize husky in root or frontend.
+Install eslint dependencies.
 
-**Step 2: Run test to verify it fails**
-Run: `npm --prefix frontend test` (or equivalent run command)
-Expected: FAIL (missing files and test setup).
+**Step 3: Run validation to verify it passes**
+Run: `npm --prefix frontend run lint`
+Expected: PASS (zero lint errors).
 
-**Step 3: Write minimal implementation**
-Create Next.js app in `frontend/` directory using npm.
-Write minimal `frontend/src/app/page.tsx`:
-```tsx
-export default function Page() {
-  return (
-    <main style={{ padding: '2rem' }}>
-      <h1>OCR Invoice Processing</h1>
-      <p>Upload an invoice to extract structured JSON data.</p>
-    </main>
-  );
-}
-```
-
-**Step 4: Run test to verify it passes**
-Run: `npm --prefix frontend test` (or validation check)
-Expected: PASS
-
-**Step 5: Commit**
+**Step 4: Commit**
 ```bash
 git add frontend/
-git commit -m "feat: initialize frontend nextjs project structure"
+git commit -m "feat: initialize nextjs frontend with eslint and husky pre-commit hooks"
 ```
 
 ---
 
-### Task 4: Define Invoice Data Models & Gemini Extraction Interface
+### Task 4: Define Invoice Model & Mock Gemini Vision API Client
 
 **Files:**
 - Create: `backend/src/main/java/com/example/ocr/model/InvoiceData.java`
@@ -194,8 +192,8 @@ git commit -m "feat: initialize frontend nextjs project structure"
 - Create: `backend/src/main/java/com/example/ocr/service/GeminiOcrServiceImpl.java`
 - Test: `backend/src/test/java/com/example/ocr/service/GeminiOcrServiceTest.java`
 
-**Step 1: Write the failing test**
-Create `backend/src/test/java/com/example/ocr/service/GeminiOcrServiceTest.java` to assert that the parsing of a mock image input yields a structured `InvoiceData` object matching SPEC-002:
+**Step 1: Write failing service test**
+Assert mock extraction yields structured model matching SPEC-002:
 ```java
 package com.example.ocr.service;
 
@@ -205,283 +203,106 @@ import org.springframework.mock.web.MockMultipartFile;
 import static org.junit.jupiter.api.Assertions.*;
 
 class GeminiOcrServiceTest {
-    private final GeminiOcrService service = new GeminiOcrServiceImpl(null); // passing null for API key/client temporarily
+    private final GeminiOcrService service = new GeminiOcrServiceImpl();
 
     @Test
     void testMockExtraction() throws Exception {
-        MockMultipartFile file = new MockMultipartFile("file", "invoice.png", "image/png", "mock content".getBytes());
+        MockMultipartFile file = new MockMultipartFile("file", "invoice.png", "image/png", "dummy".getBytes());
         InvoiceData result = service.extractMock(file);
         assertNotNull(result);
         assertEquals("Mock Vendor", result.getVendor());
-        assertEquals(550000.0, result.getTotal());
     }
 }
 ```
 
 **Step 2: Run test to verify it fails**
-Run: `mvn -f backend/pom.xml test -Dtest=GeminiOcrServiceTest`
-Expected: FAIL (missing classes and interface).
+Run: `cd backend && gradle test --tests "com.example.ocr.service.GeminiOcrServiceTest"`
+Expected: FAIL
 
 **Step 3: Write minimal implementation**
-Create classes and interface.
-`backend/src/main/java/com/example/ocr/model/InvoiceData.java`:
-```java
-package com.example.ocr.model;
-
-import java.util.List;
-
-public class InvoiceData {
-    private String vendor;
-    private String taxCode;
-    private String invoiceNumber;
-    private String date;
-    private List<Item> items;
-    private double subtotal;
-    private double vat;
-    private double total;
-
-    // Getters, Setters
-
-    public static class Item {
-        private String name;
-        private int quantity;
-        private double unitPrice;
-        private double total;
-        // Getters, Setters
-    }
-
-    // getters and setters for InvoiceData
-    public String getVendor() { return vendor; }
-    public void setVendor(String vendor) { this.vendor = vendor; }
-    public double getTotal() { return total; }
-    public void setTotal(double total) { this.total = total; }
-}
-```
-
-`backend/src/main/java/com/example/ocr/service/GeminiOcrService.java`:
-```java
-package com.example.ocr.service;
-
-import com.example.ocr.model.InvoiceData;
-import org.springframework.web.multipart.MultipartFile;
-import java.io.IOException;
-
-public interface GeminiOcrService {
-    InvoiceData extract(MultipartFile file) throws IOException;
-    InvoiceData extractMock(MultipartFile file) throws IOException;
-}
-```
-
-`backend/src/main/java/com/example/ocr/service/GeminiOcrServiceImpl.java`:
-```java
-package com.example.ocr.service;
-
-import com.example.ocr.model.InvoiceData;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-import java.io.IOException;
-
-@Service
-public class GeminiOcrServiceImpl implements GeminiOcrService {
-    public GeminiOcrServiceImpl(Object dummy) {}
-
-    @Override
-    public InvoiceData extract(MultipartFile file) throws IOException {
-        return null;
-    }
-
-    @Override
-    public InvoiceData extractMock(MultipartFile file) throws IOException {
-        InvoiceData mock = new InvoiceData();
-        mock.setVendor("Mock Vendor");
-        mock.setTotal(550000.0);
-        return mock;
-    }
-}
-```
+Implement classes matching parameters.
 
 **Step 4: Run test to verify it passes**
-Run: `mvn -f backend/pom.xml test -Dtest=GeminiOcrServiceTest`
+Run: `cd backend && gradle test --tests "com.example.ocr.service.GeminiOcrServiceTest"`
 Expected: PASS
 
 **Step 5: Commit**
 ```bash
-git add backend/src/main/java/com/example/ocr/model/InvoiceData.java backend/src/main/java/com/example/ocr/service/GeminiOcrService.java backend/src/main/java/com/example/ocr/service/GeminiOcrServiceImpl.java backend/src/test/java/com/example/ocr/service/GeminiOcrServiceTest.java
-git commit -m "feat: define invoice data model and gemini service interface with mock extraction"
+git add backend/
+git commit -m "feat: define invoice data schemas and mock gemini service"
 ```
 
 ---
 
-### Task 5: Implement Gemini API Real Client & Prompts
+### Task 5: Implement Real Gemini API Client & Hermes MCP Integrator
 
 **Files:**
 - Modify: `backend/src/main/java/com/example/ocr/service/GeminiOcrServiceImpl.java`
-- Modify: `backend/src/main/resources/application.yml`
-- Test: `backend/src/test/java/com/example/ocr/service/GeminiOcrServiceIntegrationTest.java`
+- Create: `backend/src/main/java/com/example/ocr/service/HermesNotificationService.java`
+- Test: `backend/src/test/java/com/example/ocr/service/HermesNotificationServiceTest.java`
 
-**Step 1: Write failing integration test**
-Create `backend/src/test/java/com/example/ocr/service/GeminiOcrServiceIntegrationTest.java` (using `@Disabled` by default or active key if available):
+**Step 1: Write failing notification test**
+Create `backend/src/test/java/com/example/ocr/service/HermesNotificationServiceTest.java` verifying notification post requests:
 ```java
 package com.example.ocr.service;
 
-import com.example.ocr.model.InvoiceData;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.mock.web.MockMultipartFile;
+import org.mockito.Mockito;
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
-class GeminiOcrServiceIntegrationTest {
-    @Autowired
-    private GeminiOcrService service;
+class HermesNotificationServiceTest {
+    private final HermesNotificationService notificationService = Mockito.spy(new HermesNotificationService());
 
     @Test
-    @Disabled("Needs actual GEMINI_API_KEY environment variable")
-    void testRealExtraction() throws Exception {
-        MockMultipartFile file = new MockMultipartFile("file", "test.png", "image/png", "dummy content".getBytes());
-        InvoiceData result = service.extract(file);
-        assertNotNull(result);
+    void testNotify() {
+        notificationService.sendNotification("Extracted invoice successfully");
+        Mockito.verify(notificationService, Mockito.times(1)).sendNotification(Mockito.anyString());
     }
 }
 ```
 
-**Step 2: Run test to verify it fails/disables correctly**
-Run: `mvn -f backend/pom.xml test -Dtest=GeminiOcrServiceIntegrationTest`
-Expected: PASS (since disabled, or FAIL if we force run without api key configured)
+**Step 2: Run test to verify it fails**
+Expected: FAIL (missing class).
 
-**Step 3: Implement client logic using WebClient/RestTemplate**
-In `backend/src/main/java/com/example/ocr/service/GeminiOcrServiceImpl.java`, write code to encode the image to base64, construct the multi-modal payload for Gemini's API (`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent`), specify the JSON schema requirement, send the post request, and parse response into `InvoiceData`.
+**Step 3: Implement real Gemini call & Hermes integration**
+Add Gemini HTTP POST connection with JSON structured output parameters.
+Write `HermesNotificationService` to send notification details via a configured REST client target or mock channel message payload.
 
 **Step 4: Run test to verify it passes**
-Configure API key and run the integration test.
+Run: `cd backend && gradle test`
 Expected: PASS
 
 **Step 5: Commit**
 ```bash
-git add backend/src/main/java/com/example/ocr/service/GeminiOcrServiceImpl.java backend/src/test/java/com/example/ocr/service/GeminiOcrServiceIntegrationTest.java
-git commit -m "feat: implement gemini vision api client payload sending and response parsing"
+git add backend/
+git commit -m "feat: integrate real gemini vision client and hermes notification connector"
 ```
 
 ---
 
-### Task 6: Create REST Endpoint for Extraction
+### Task 6: Implement Endpoints and Next.js Front-End Integration
 
 **Files:**
 - Create: `backend/src/main/java/com/example/ocr/controller/OcrController.java`
-- Test: `backend/src/test/java/com/example/ocr/controller/OcrControllerTest.java`
-
-**Step 1: Write the failing test**
-Create `backend/src/test/java/com/example/ocr/controller/OcrControllerTest.java`:
-```java
-package com.example.ocr.controller;
-
-import com.example.ocr.service.GeminiOcrService;
-import com.example.ocr.model.InvoiceData;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.web.servlet.MockMvc;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-@WebMvcTest(OcrController.class)
-class OcrControllerTest {
-    @Autowired
-    private MockMvc mockMvc;
-
-    @MockBean
-    private GeminiOcrService service;
-
-    @Test
-    void testUploadAndExtract() throws Exception {
-        MockMultipartFile file = new MockMultipartFile("file", "invoice.png", "image/png", "dummy".getBytes());
-        InvoiceData data = new InvoiceData();
-        data.setVendor("Test Vendor");
-
-        Mockito.when(service.extract(Mockito.any())).thenReturn(data);
-
-        mockMvc.perform(multipart("/api/extract").file(file))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.vendor").value("Test Vendor"));
-    }
-}
-```
-
-**Step 2: Run test to verify it fails**
-Run: `mvn -f backend/pom.xml test -Dtest=OcrControllerTest`
-Expected: FAIL (OcrController does not exist)
-
-**Step 3: Write minimal implementation**
-Create `backend/src/main/java/com/example/ocr/controller/OcrController.java`:
-```java
-package com.example.ocr.controller;
-
-import com.example.ocr.model.InvoiceData;
-import com.example.ocr.service.GeminiOcrService;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import java.io.IOException;
-
-@RestController
-@RequestMapping("/api")
-@CrossOrigin(origins = "*")
-public class OcrController {
-    private final GeminiOcrService service;
-
-    public OcrController(GeminiOcrService service) {
-        this.service = service;
-    }
-
-    @PostMapping("/extract")
-    public InvoiceData extract(@RequestParam("file") MultipartFile file) throws IOException {
-        return service.extract(file);
-    }
-}
-```
-
-**Step 4: Run test to verify it passes**
-Run: `mvn -f backend/pom.xml test -Dtest=OcrControllerTest`
-Expected: PASS
-
-**Step 5: Commit**
-```bash
-git add backend/src/main/java/com/example/ocr/controller/OcrController.java backend/src/test/java/com/example/ocr/controller/OcrControllerTest.java
-git commit -m "feat: create /api/extract rest endpoint"
-```
-
----
-
-### Task 7: Next.js UI Drag-and-Drop Image Uploader & Extracted JSON Visualizer
-
-**Files:**
 - Modify: `frontend/src/app/page.tsx`
 - Create: `frontend/src/app/components/Uploader.tsx`
-- Create: `frontend/src/app/components/JsonViewer.tsx`
 
-**Step 1: Write a smoke test for upload form**
-Write simple rendering test in `frontend/src/app/components/Uploader.test.tsx` checking that dropzone is present.
+**Step 1: Write integration tests**
+Verify frontend rendering and backend endpoint accessibility.
 
-**Step 2: Run test to verify it fails**
-Run: `npm --prefix frontend test`
+**Step 2: Run tests to verify they fail**
 Expected: FAIL
 
-**Step 3: Write UI Implementation**
-- `Uploader`: Form allowing file selection or drag/drop of images. Sends file via `fetch` to `http://localhost:8080/api/extract`.
-- `JsonViewer`: Renders result in a structured layout alongside the image preview. Shows structured fields (Vendor, Date, Items, Tax Code, Totals) in inputs allowing the user to inspect and edit.
+**Step 3: Implement controller and UI**
+Create `/api/extract` REST endpoint saving results into PostgreSQL and returning JSON output.
+Create drag-and-drop Next.js UI using CSS, integrated with ESLint & Husky check constraints.
 
-**Step 4: Run tests and test locally**
-Run the frontend locally: `npm run dev` in frontend, and `mvn spring-boot:run` in backend. Check integration.
+**Step 4: Run build & verify integration**
+Verify system-wide integration, clean formatting, and run check lint rules.
 Expected: PASS
 
 **Step 5: Commit**
 ```bash
-git add frontend/
-git commit -m "feat: build Next.js upload and JSON visualization UI"
+git add .
+git commit -m "feat: complete end-to-end invoice extraction workflow with UI visualizer"
 ```
