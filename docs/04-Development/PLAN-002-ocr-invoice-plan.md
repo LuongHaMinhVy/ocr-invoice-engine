@@ -6,21 +6,21 @@
 
 **Architecture:** A Next.js frontend allows users to upload invoice images, which are sent via REST to a Spring Boot backend. The backend forwards the image to the Gemini Vision API using a structured schema, validates calculations, stores the output in PostgreSQL, triggers a Hermes notification message, and returns the JSON to the client.
 
-**Tech Stack:** Java 17+, Spring Boot 3.x, Gradle (Groovy DSL), PostgreSQL, Next.js 14+ (App Router), TypeScript, ESLint, Husky, Gemini API, Hermes MCP REST client, Stitch MCP.
+**Tech Stack:** Java 21, Spring Boot 3.3.1, Gradle (Groovy DSL), PostgreSQL, Next.js 14+ (App Router), TypeScript, ESLint, Husky, Gemini API, Hermes MCP REST client, Stitch MCP.
 
 ---
 
 ### Task 1: Initialize Backend Project Structure (Gradle Groovy)
 
 **Files:**
-- Create: `backend/build.gradle`
-- Create: `backend/settings.gradle`
-- Create: `backend/src/main/java/com/example/ocr/OcrApplication.java`
-- Create: `backend/src/main/resources/application.yml`
-- Test: `backend/src/test/java/com/example/ocr/OcrApplicationTests.java`
+- Create: `apps/backend/build.gradle`
+- Create: `apps/backend/settings.gradle`
+- Create: `apps/backend/src/main/java/com/example/ocr/OcrApplication.java`
+- Create: `apps/backend/src/main/resources/application.yml`
+- Test: `apps/backend/src/test/java/com/example/ocr/OcrApplicationTests.java`
 
 **Step 1: Write a minimal failing test**
-Create `backend/src/test/java/com/example/ocr/OcrApplicationTests.java`:
+Create `apps/backend/src/test/java/com/example/ocr/OcrApplicationTests.java`:
 ```java
 package com.example.ocr;
 
@@ -36,21 +36,21 @@ class OcrApplicationTests {
 ```
 
 **Step 2: Run test to verify it fails**
-Run: `cd backend && ./gradlew test` (or `gradlew.bat test` on Windows)
+Run: `cd apps/backend && ./gradlew test` (or `gradlew.bat test` on Windows)
 Expected: FAIL (No build file or gradle wrapper).
 
 **Step 3: Write minimal implementation**
-Create `backend/build.gradle`:
+Create `apps/backend/build.gradle`:
 ```groovy
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.2.5'
-    id 'io.spring.dependency-management' version '1.1.4'
+    id 'org.springframework.boot' version '3.3.1'
+    id 'io.spring.dependency-management' version '1.1.5'
 }
 
 group = 'com.example'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '17'
+sourceCompatibility = '21'
 
 repositories {
     mavenCentral()
@@ -67,11 +67,11 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 ```
-Create `backend/settings.gradle`:
+Create `apps/backend/settings.gradle`:
 ```groovy
 rootProject.name = 'ocr-backend'
 ```
-Create `backend/src/main/java/com/example/ocr/OcrApplication.java`:
+Create `apps/backend/src/main/java/com/example/ocr/OcrApplication.java`:
 ```java
 package com.example.ocr;
 
@@ -85,15 +85,15 @@ public class OcrApplication {
     }
 }
 ```
-Create `backend/src/main/resources/application.yml` with dynamic H2/PostgreSQL config.
+Create `apps/backend/src/main/resources/application.yml` with dynamic H2/PostgreSQL config.
 
 **Step 4: Run test to verify it passes**
-Run: `cd backend && gradle test` (or setup gradlew)
+Run: `cd apps/backend && gradle test` (or setup gradlew)
 Expected: PASS
 
 **Step 5: Commit**
 ```bash
-git add backend/
+git add apps/backend/
 git commit -m "feat: initialize backend spring boot project structure with gradle groovy"
 ```
 
@@ -102,13 +102,13 @@ git commit -m "feat: initialize backend spring boot project structure with gradl
 ### Task 2: Configure PostgreSQL Database & Entity
 
 **Files:**
-- Create: `backend/src/main/java/com/example/ocr/model/Invoice.java`
-- Create: `backend/src/main/java/com/example/ocr/repository/InvoiceRepository.java`
-- Modify: `backend/src/main/resources/application.yml`
-- Test: `backend/src/test/java/com/example/ocr/repository/InvoiceRepositoryTest.java`
+- Create: `apps/backend/src/main/java/com/example/ocr/model/Invoice.java`
+- Create: `apps/backend/src/main/java/com/example/ocr/repository/InvoiceRepository.java`
+- Modify: `apps/backend/src/main/resources/application.yml`
+- Test: `apps/backend/src/test/java/com/example/ocr/repository/InvoiceRepositoryTest.java`
 
 **Step 1: Write a failing repository test**
-Create `backend/src/test/java/com/example/ocr/repository/InvoiceRepositoryTest.java` testing invoice saving:
+Create `apps/backend/src/test/java/com/example/ocr/repository/InvoiceRepositoryTest.java` testing invoice saving:
 ```java
 package com.example.ocr.repository;
 
@@ -135,20 +135,20 @@ class InvoiceRepositoryTest {
 ```
 
 **Step 2: Run test to verify it fails**
-Run: `cd backend && gradle test --tests "com.example.ocr.repository.InvoiceRepositoryTest"`
+Run: `cd apps/backend && gradle test --tests "com.example.ocr.repository.InvoiceRepositoryTest"`
 Expected: FAIL (Compilation error - missing Entity/Repository classes).
 
 **Step 3: Write minimal implementation**
-Create Entity `backend/src/main/java/com/example/ocr/model/Invoice.java` (using JPA annotations `@Entity`, `@Id`, `@GeneratedValue`) and Repository `backend/src/main/java/com/example/ocr/repository/InvoiceRepository.java`.
+Create Entity `apps/backend/src/main/java/com/example/ocr/model/Invoice.java` (using JPA annotations `@Entity`, `@Id`, `@GeneratedValue`) and Repository `apps/backend/src/main/java/com/example/ocr/repository/InvoiceRepository.java`.
 Configure local H2 database for tests and PostgreSQL parameters in `application.yml`.
 
 **Step 4: Run test to verify it passes**
-Run: `cd backend && gradle test --tests "com.example.ocr.repository.InvoiceRepositoryTest"`
+Run: `cd apps/backend && gradle test --tests "com.example.ocr.repository.InvoiceRepositoryTest"`
 Expected: PASS
 
 **Step 5: Commit**
 ```bash
-git add backend/src/main/java/com/example/ocr/model/Invoice.java backend/src/main/java/com/example/ocr/repository/InvoiceRepository.java backend/src/main/resources/application.yml
+git add apps/backend/src/main/java/com/example/ocr/model/Invoice.java apps/backend/src/main/java/com/example/ocr/repository/InvoiceRepository.java apps/backend/src/main/resources/application.yml
 git commit -m "feat: configure postgresql entity and repository"
 ```
 
@@ -157,10 +157,10 @@ git commit -m "feat: configure postgresql entity and repository"
 ### Task 3: Initialize Next.js Frontend with ESLint & Husky
 
 **Files:**
-- Create: `frontend/package.json`
-- Create: `frontend/.eslintrc.json`
-- Create: `frontend/.husky/pre-commit`
-- Create: `frontend/src/app/page.tsx`
+- Create: `apps/frontend/package.json`
+- Create: `apps/frontend/.eslintrc.json`
+- Create: `apps/frontend/.husky/pre-commit`
+- Create: `apps/frontend/src/app/page.tsx`
 
 **Step 1: Write a failing validation check**
 Verify ESLint config exists and runs:
@@ -178,7 +178,7 @@ Expected: PASS (zero lint errors).
 
 **Step 4: Commit**
 ```bash
-git add frontend/
+git add apps/frontend/
 git commit -m "feat: initialize nextjs frontend with eslint and husky pre-commit hooks"
 ```
 
@@ -187,10 +187,10 @@ git commit -m "feat: initialize nextjs frontend with eslint and husky pre-commit
 ### Task 4: Define Invoice Model & Mock Gemini Vision API Client
 
 **Files:**
-- Create: `backend/src/main/java/com/example/ocr/model/InvoiceData.java`
-- Create: `backend/src/main/java/com/example/ocr/service/GeminiOcrService.java`
-- Create: `backend/src/main/java/com/example/ocr/service/GeminiOcrServiceImpl.java`
-- Test: `backend/src/test/java/com/example/ocr/service/GeminiOcrServiceTest.java`
+- Create: `apps/backend/src/main/java/com/example/ocr/model/InvoiceData.java`
+- Create: `apps/backend/src/main/java/com/example/ocr/service/GeminiOcrService.java`
+- Create: `apps/backend/src/main/java/com/example/ocr/service/GeminiOcrServiceImpl.java`
+- Test: `apps/backend/src/test/java/com/example/ocr/service/GeminiOcrServiceTest.java`
 
 **Step 1: Write failing service test**
 Assert mock extraction yields structured model matching SPEC-002:
@@ -216,19 +216,19 @@ class GeminiOcrServiceTest {
 ```
 
 **Step 2: Run test to verify it fails**
-Run: `cd backend && gradle test --tests "com.example.ocr.service.GeminiOcrServiceTest"`
+Run: `cd apps/backend && gradle test --tests "com.example.ocr.service.GeminiOcrServiceTest"`
 Expected: FAIL
 
 **Step 3: Write minimal implementation**
 Implement classes matching parameters.
 
 **Step 4: Run test to verify it passes**
-Run: `cd backend && gradle test --tests "com.example.ocr.service.GeminiOcrServiceTest"`
+Run: `cd apps/backend && gradle test --tests "com.example.ocr.service.GeminiOcrServiceTest"`
 Expected: PASS
 
 **Step 5: Commit**
 ```bash
-git add backend/
+git add apps/backend/
 git commit -m "feat: define invoice data schemas and mock gemini service"
 ```
 
@@ -237,12 +237,12 @@ git commit -m "feat: define invoice data schemas and mock gemini service"
 ### Task 5: Implement Real Gemini API Client & Hermes MCP Integrator
 
 **Files:**
-- Modify: `backend/src/main/java/com/example/ocr/service/GeminiOcrServiceImpl.java`
-- Create: `backend/src/main/java/com/example/ocr/service/HermesNotificationService.java`
-- Test: `backend/src/test/java/com/example/ocr/service/HermesNotificationServiceTest.java`
+- Modify: `apps/backend/src/main/java/com/example/ocr/service/GeminiOcrServiceImpl.java`
+- Create: `apps/backend/src/main/java/com/example/ocr/service/HermesNotificationService.java`
+- Test: `apps/backend/src/test/java/com/example/ocr/service/HermesNotificationServiceTest.java`
 
 **Step 1: Write failing notification test**
-Create `backend/src/test/java/com/example/ocr/service/HermesNotificationServiceTest.java` verifying notification post requests:
+Create `apps/backend/src/test/java/com/example/ocr/service/HermesNotificationServiceTest.java` verifying notification post requests:
 ```java
 package com.example.ocr.service;
 
@@ -269,12 +269,12 @@ Add Gemini HTTP POST connection with JSON structured output parameters.
 Write `HermesNotificationService` to send notification details via a configured REST client target or mock channel message payload.
 
 **Step 4: Run test to verify it passes**
-Run: `cd backend && gradle test`
+Run: `cd apps/backend && gradle test`
 Expected: PASS
 
 **Step 5: Commit**
 ```bash
-git add backend/
+git add apps/backend/
 git commit -m "feat: integrate real gemini vision client and hermes notification connector"
 ```
 
@@ -283,9 +283,9 @@ git commit -m "feat: integrate real gemini vision client and hermes notification
 ### Task 6: Implement Endpoints and Next.js Front-End Integration
 
 **Files:**
-- Create: `backend/src/main/java/com/example/ocr/controller/OcrController.java`
-- Modify: `frontend/src/app/page.tsx`
-- Create: `frontend/src/app/components/Uploader.tsx`
+- Create: `apps/backend/src/main/java/com/example/ocr/controller/OcrController.java`
+- Modify: `apps/frontend/src/app/page.tsx`
+- Create: `apps/frontend/src/app/components/Uploader.tsx`
 
 **Step 1: Write integration tests**
 Verify frontend rendering and backend endpoint accessibility.
