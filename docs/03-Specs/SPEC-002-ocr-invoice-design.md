@@ -1,4 +1,4 @@
----
+﻿---
 id: SPEC-002
 title: OCR Invoice to JSON Processing Engine
 status: approved
