@@ -13,5 +13,5 @@
 | 9 | Task 1: Create Standard Vault Folders | ✅ done |
 | 10 | Task 2: Relocate Initial Files and Current Design Docs | ✅ done |
 | 11 | Task 3: Update Project Conventions Skill to Enforce New Paths | ✅ done |
-| 12 | Task 4: Update Spec Approval Gate Skill to Validate New Paths | ⏳ in progress |
-| 13 | Task 5: Fix Internal References in Relocated Docs | ⏳ todo |
+| 12 | Task 4: Update Spec Approval Gate Skill to Validate New Paths | ✅ done |
+| 13 | Task 5: Fix Internal References in Relocated Docs | ⏳ in progress |
