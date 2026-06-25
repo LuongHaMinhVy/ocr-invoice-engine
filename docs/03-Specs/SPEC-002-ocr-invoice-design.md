@@ -20,11 +20,12 @@ Build an OCR engine that processes invoice images (VAT invoices, receipts, bills
 │             │     JSON response           │                  │     JSON result     │             │
 └─────────────┘                             └──────────────────┘                     └─────────────┘
                                                     │
-                                                    ▼
-                                            ┌──────────────┐
-                                            │  PostgreSQL   │
-                                            │  (History)    │
-                                            └──────────────┘
+                                           ┌────────┴────────┐
+                                           ▼                 ▼
+                                    ┌──────────────┐  ┌──────────────┐
+                                    │  PostgreSQL   │  │  MCP Servers │
+                                    │  (Database)  │  │(Hermes/Stitch│
+                                    └──────────────┘  └──────────────┘
 ```
 
 ### Components
@@ -32,15 +33,19 @@ Build an OCR engine that processes invoice images (VAT invoices, receipts, bills
    - Upload UI (drag-and-drop image files).
    - Side-by-side view showing the uploaded image and the extracted JSON values in an editable form.
    - History list to review previous extractions.
-   - Export feature (JSON, Excel).
+   - Code standards: **ESLint** & **Husky** pre-commit hooks.
 
 2. **Backend (Spring Boot)**:
-   - REST API endpoints for upload, extraction, and history management.
-   - Gemini Client: Integrates with Gemini 1.5 Flash/Pro using structured JSON output schemas.
-   - Database: PostgreSQL storing metadata, invoice file paths/storage refs, and extracted structured JSON data.
+   - Built with **Gradle (Groovy DSL)**.
+   - REST API endpoints for upload, extraction, and history.
+   - Gemini Client: Integrates with Gemini 1.5 Flash/Pro using structured JSON output.
+   - Database: **PostgreSQL** storing metadata, invoice file paths/storage refs, and extracted structured JSON data.
+   - **MCP Bridge Clients**:
+     - **Hermes MCP**: Send real-time notifications/messages to chat channels (e.g., Telegram, Slack) when an invoice is processed.
+     - **Stitch MCP**: Align screen generation and visual design system templates.
 
 3. **External Services**:
-   - Google Gemini Vision API: Used to perform multi-modal extraction directly from image files.
+   - Google Gemini Vision API.
 
 ## Data Schema (Extracted JSON)
 ```json
@@ -66,4 +71,4 @@ Build an OCR engine that processes invoice images (VAT invoices, receipts, bills
 ## Security & Verification
 - Verify input file size (< 10MB) and type (PNG, JPEG, PDF).
 - Mathematical verification on backend: Sum(items.total) == subtotal; subtotal + vat == total.
-- Database storage of original image and JSON data for audit trail.
+- Database storage of original image and JSON data in PostgreSQL.
