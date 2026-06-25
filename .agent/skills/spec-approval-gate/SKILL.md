@@ -34,7 +34,7 @@ If the Gate Check is not complete, you may not write code.
 ```
 BEFORE WRITING CODE:
 
-1. Find the related spec in `docs/superpowers/specs/`
+1. Find the related spec in `docs/03-Specs/`
    → No spec found? STOP. Create the spec first.
 
 2. Read frontmatter `status:`
