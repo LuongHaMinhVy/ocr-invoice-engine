@@ -15,3 +15,9 @@
 | 11 | Task 3: Update Project Conventions Skill to Enforce New Paths | ✅ done |
 | 12 | Task 4: Update Spec Approval Gate Skill to Validate New Paths | ✅ done |
 | 13 | Task 5: Fix Internal References in Relocated Docs | ✅ done |
+| 14 | Create SPEC-003 Design Spec (MCP Integrations) | ✅ done |
+| 15 | Create PLAN-004 Implementation Plan (MCP Integrations) | ✅ done |
+| 16 | Task 1: Add Spring Integration Mail Dependencies | ⏳ pending |
+| 17 | Task 2: Implement Mail Configuration and Mail Receiver Config | ⏳ pending |
+| 18 | Task 3: Implement EmailIntakeService and Attachment Extraction | ⏳ pending |
+| 19 | Task 4: Setup PostgreSQL MCP Configuration Guide | ⏳ pending |
