@@ -15,13 +15,15 @@ Directory structure, naming conventions, and document standards per SOP-DEV-001.
 
 ```
 project-root/
-├── docs/superpowers/
-│   ├── specs/           # Spec documents (Step 1: Specification)
-│   │   └── YYYY-MM-DD-<feature-name>-design.md
-│   └── plans/           # Implementation plans (Step 2: Planning)
-│       └── YYYY-MM-DD-<feature-name>-plan.md
-├── docs/plans/
-│   └── task.md          # Task tracker (table-only, continuously updated)
+├── docs/                # Standard Obsidian Vault
+│   ├── 00-Inbox/        # Draft notes, raw information
+│   ├── 01-Requirements/ # User Stories (US-###)
+│   ├── 02-Design/       # Architecture Decision Records (ADR-###)
+│   ├── 03-Specs/        # Spec documents (SPEC-###)
+│   ├── 04-Development/  # Plans (PLAN-###) & Task Tracker (task.md)
+│   ├── 05-Testing/      # Testing plans, logs, test results (TR-###)
+│   ├── 06-Maintenance/  # Deployment, ops, maintenance logs
+│   └── 99-Templates/    # Templates and SOPs (e.g. SOP-DEV-001)
 └── .worktrees/          # Isolated git worktrees (Step 3: Environment)
     └── feature-<name>/
 ```
@@ -73,17 +75,17 @@ Every task in a plan must:
 
 | Artifact | Location | Example |
 |----------|----------|---------|
-| Spec | `docs/superpowers/specs/` | `2026-06-25-ocr-pipeline-design.md` |
-| Plan | `docs/superpowers/plans/` | `2026-06-25-ocr-pipeline-plan.md` |
-| Task tracker | `docs/plans/task.md` | Table-only, continuously updated |
+| Spec | `docs/03-Specs/` | `SPEC-002-ocr-invoice-design.md` |
+| Plan | `docs/04-Development/` | `PLAN-002-ocr-invoice-plan.md` |
+| Task tracker | `docs/04-Development/task.md` | Table-only, continuously updated |
 | Worktree | `.worktrees/` | `.worktrees/feature-ocr-pipeline` |
 
 ## Common Mistakes
 
 | Wrong | Correct |
 |-------|---------|
-| Save spec in `docs/plans/` | Save in `docs/superpowers/specs/` |
-| Filename without date | `YYYY-MM-DD-<name>-design.md` |
+| Save spec in `docs/plans/` | Save in `docs/03-Specs/` |
+| Filename without SPEC prefix | `SPEC-###-<name>.md` |
 | Task "implement authentication" (too large) | Split into 3-5 tasks of 2-5 minutes each |
 | Mark `[x]` before commit | Commit first, mark `[x]` after |
 | Worktree on `main` | Create isolated worktree: `.worktrees/feature-<name>` |
