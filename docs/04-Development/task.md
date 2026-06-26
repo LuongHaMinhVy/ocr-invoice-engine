@@ -35,7 +35,7 @@
 | 31 | Task 1 (PLAN-06): Backup and Migrate Backend Files to the Submodule | ✅ done |
 | 32 | Task 2 (PLAN-06): Clean up Parent Repository Backend Files | ✅ done |
 | 33 | Task 3 (PLAN-06): Setup Backend Virtual Environment and Dependencies | ✅ done |
-| 34 | Task 4 (PLAN-06): Implement Invoice Upload API & Local Storage | ⏳ pending |
+| 34 | Task 4 (PLAN-06): Implement Invoice Upload API & Local Storage | ⏳ in_progress |
 | 35 | Task 5 (PLAN-06): Implement Image Streaming and CRUD Approval | ⏳ pending |
 
 
