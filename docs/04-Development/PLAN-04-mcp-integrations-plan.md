@@ -174,7 +174,93 @@ git commit -m "feat: implement email intake attachment extraction service"
 
 ---
 
-### Task 4: Setup PostgreSQL MCP Configuration Guide
+### Task 4: Implement Hermes MCP Notification Client
+
+**Files:**
+- Create: `apps/backend/app/services/hermes_service.py`
+- Test: `apps/backend/tests/test_hermes_service.py`
+
+**Step 1: Write failing test**
+Create a test file `apps/backend/tests/test_hermes_service.py` to assert that `HermesService.send_invoice_notification` calls the correct bridge URL with the correct payload:
+```python
+import pytest
+from unittest.mock import patch
+from app.services.hermes_service import HermesService
+
+@patch("requests.post")
+def test_send_notification(mock_post):
+    mock_post.return_value.status_code = 200
+    mock_post.return_value.json.return_value = {"status": "success"}
+
+    service = HermesService(bridge_url="http://localhost:8089", target="telegram:-1002148765432")
+    success = service.send_invoice_notification(invoice_id=1, vendor="Cửa hàng tiện lợi", total=50000.0, status="VALIDATED")
+    
+    assert success is True
+    mock_post.assert_called_once()
+    args, kwargs = mock_post.call_args
+    assert kwargs["json"]["target"] == "telegram:-1002148765432"
+    assert "Cửa hàng tiện lợi" in kwargs["json"]["message"]
+```
+
+**Step 2: Implement HermesService**
+Create `apps/backend/app/services/hermes_service.py`:
+```python
+import requests
+import logging
+
+logger = logging.getLogger(__name__)
+
+class HermesService:
+    def __init__(self, bridge_url, target):
+        self.bridge_url = bridge_url
+        self.target = target
+
+    def send_invoice_notification(self, invoice_id, vendor, total, status):
+        if not self.bridge_url or not self.target:
+            logger.warning("Hermes configuration missing. Skipping notification.")
+            return False
+
+        message = (
+            f"🔔 [OCR Invoice] Phát hiện hóa đơn mới!\n"
+            f"- Nhà cung cấp: {vendor}\n"
+            f"- Tổng tiền: {total:,.2f} VNĐ\n"
+            f"- Trạng thái xác thực: {status}\n"
+            f"- Link đối chiếu: http://localhost:3000/invoices/{invoice_id}"
+        )
+
+        try:
+            response = requests.post(
+                f"{self.bridge_url}/api/notifications",
+                json={"target": self.target, "message": message},
+                timeout=5
+            )
+            if response.status_code == 200:
+                logger.info("Notification successfully sent to Hermes.")
+                return True
+            else:
+                logger.error(f"Hermes bridge returned status {response.status_code}: {response.text}")
+                return False
+        except Exception as e:
+            logger.error(f"Failed to send notification to Hermes: {e}")
+            return False
+```
+
+**Step 3: Run test**
+Run:
+```powershell
+pytest apps/backend/tests/test_hermes_service.py -v
+```
+Expected: PASS
+
+**Step 4: Commit**
+```bash
+git add apps/backend/app/services/hermes_service.py apps/backend/tests/test_hermes_service.py
+git commit -m "feat: implement Hermes notification service client"
+```
+
+---
+
+### Task 5: Setup PostgreSQL MCP Configuration Guide
 
 **Files:**
 - Create: `docs/06-Maintenance/postgres-mcp-setup.md`

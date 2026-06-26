@@ -56,10 +56,23 @@ Dành riêng cho quá trình phát triển và kiểm tra dữ liệu bằng Age
   - Xem schema của bảng hóa đơn (`describe_table`).
   - Thực thi các câu lệnh SELECT để đối chiếu dữ liệu trích xuất thực tế (`query`).
 
+### 2.3 Hermes MCP Notification Integration
+Backend Flask gửi thông báo tự động thông qua việc gửi yêu cầu HTTP POST tới REST bridge của Hermes MCP hoặc gọi trực tiếp công cụ `messages_send` để đẩy tin nhắn qua Telegram/Slack:
+- **Cấu hình Target:** Đọc từ biến môi trường `HERMES_NOTIFICATION_TARGET` (ví dụ: `telegram:-1002148765432` hoặc `slack:#invoice-notifications`).
+- **Nội dung tin nhắn:**
+  ```
+  🔔 [OCR Invoice] Phát hiện hóa đơn mới!
+  - Nhà cung cấp: {vendor}
+  - Tổng tiền: {total} VNĐ
+  - Trạng thái xác thực: {status}
+  - Link đối chiếu: http://localhost:3000/invoices/{id}
+  ```
+- **Resilience:** Nếu Hermes REST bridge không phản hồi, ghi nhận Error Log cảnh báo mà không làm sập luồng xử lý chính.
+
 ---
 
 ## 3. Tech Stack
-- **Backend:** Python Standard Library `imaplib`, `email`, và `APScheduler`.
+- **Backend:** Python Standard Library `imaplib`, `email`, `requests` (cho việc gọi REST API tới Hermes bridge), và `APScheduler`.
 - **Database MCP:** Node.js, `@modelcontextprotocol/server-postgres`.
 
 ---

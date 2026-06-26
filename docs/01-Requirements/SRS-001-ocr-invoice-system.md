@@ -16,7 +16,7 @@ Tài liệu Đặc tả Yêu cầu Phần mềm (SRS) này mô tả chi tiết c
 Hệ thống bao gồm:
 - **Email Inbound Intake Pipeline:** Định kỳ quét hòm thư qua giao thức IMAP, tải xuống các hóa đơn đính kèm (ảnh/PDF).
 - **OCR & Extraction Core (Gemini API):** Trích xuất thông tin hóa đơn sang cấu trúc JSON chuẩn hóa.
-- **Backend Service (Spring Boot):** Xử lý luồng dữ liệu, xác thực toán học, quản lý lưu trữ PostgreSQL và bắn thông báo qua MCP Hermes (Telegram/Slack).
+- **Backend Service (Flask):** Xử lý luồng dữ liệu, xác thực toán học, quản lý lưu trữ PostgreSQL và bắn thông báo qua MCP Hermes (Telegram/Slack).
 - **Interactive Verification Dashboard (Next.js):** Giao diện cho kế toán hoặc quản trị viên đối chiếu dữ liệu trích xuất dạng song song (Side-by-side) và chỉnh sửa, duyệt lưu trữ.
 
 ---

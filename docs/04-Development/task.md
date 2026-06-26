@@ -22,7 +22,8 @@
 | 18 | Task 1 (PLAN-04): Add Email Polling Dependencies in Flask | ⏳ pending |
 | 19 | Task 2 (PLAN-04): Implement Mail Polling Scheduler Configuration | ⏳ pending |
 | 20 | Task 3 (PLAN-04): Implement EmailIntakeService and Attachment Extraction | ⏳ pending |
-| 21 | Task 4 (PLAN-04): Setup PostgreSQL MCP Configuration Guide | ⏳ pending |
-| 22 | Task 3 (PLAN-02): Initialize Next.js Frontend with ESLint & Husky | ⏳ pending |
-| 23 | Task 4 (PLAN-02): Implement Gemini API Client and Math Verification | ⏳ pending |
-| 24 | Task 5 (PLAN-02): Implement Next.js OCR Upload and History View Interface | ⏳ pending |
+| 21 | Task 4 (PLAN-04): Implement Hermes MCP Notification Client | ⏳ pending |
+| 22 | Task 5 (PLAN-04): Setup PostgreSQL MCP Configuration Guide | ⏳ pending |
+| 23 | Task 3 (PLAN-02): Initialize Next.js Frontend with ESLint & Husky | ⏳ pending |
+| 24 | Task 4 (PLAN-02): Implement Gemini API Client and Math Verification | ⏳ pending |
+| 25 | Task 5 (PLAN-02): Implement Next.js OCR Upload and History View Interface | ⏳ pending |
