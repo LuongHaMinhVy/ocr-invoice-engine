@@ -78,7 +78,7 @@ public class MailReceiverConfig {
             Mail.imapInboundAdapter("imaps://imap.gmail.com:993/INBOX")
                 .searchTermStrategy((supportedFlags, folder) -> {
                     try {
-                        return new javax.mail.search.FlagTerm(new javax.mail.Flags(javax.mail.Flags.Flag.SEEN), false);
+                        return new jakarta.mail.search.FlagTerm(new jakarta.mail.Flags(jakarta.mail.Flags.Flag.SEEN), false);
                     } catch (Exception e) {
                         throw new IllegalStateException(e);
                     }
@@ -113,7 +113,7 @@ git commit -m "feat: configure IMAP mail flow configuration adapter"
 - Create: `apps/backend/src/test/java/com/example/ocr/service/EmailIntakeServiceTest.java`
 
 **Step 1: Write failing test**
-Create a test that mocks `javax.mail.Message` containing a multipart body with a PDF attachment, and verifies that `EmailIntakeService.extractAttachments()` extracts it successfully.
+Create a test that mocks `jakarta.mail.Message` containing a multipart body with a PDF attachment, and verifies that `EmailIntakeService.extractAttachments()` extracts it successfully.
 Run:
 ```powershell
 ./gradlew test --tests com.example.ocr.service.EmailIntakeServiceTest
@@ -126,10 +126,10 @@ Implement parsing logic to extract attachments from MultiPart emails and save th
 package com.example.ocr.service;
 
 import org.springframework.stereotype.Service;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Multipart;
-import javax.mail.Part;
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Multipart;
+import jakarta.mail.Part;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;

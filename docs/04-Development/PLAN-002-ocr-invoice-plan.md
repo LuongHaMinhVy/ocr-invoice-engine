@@ -103,6 +103,7 @@ git commit -m "feat: initialize backend spring boot project structure with gradl
 
 **Files:**
 - Create: `apps/backend/src/main/java/com/example/ocr/model/Invoice.java`
+- Create: `apps/backend/src/main/java/com/example/ocr/model/InvoiceStatus.java`
 - Create: `apps/backend/src/main/java/com/example/ocr/repository/InvoiceRepository.java`
 - Modify: `apps/backend/src/main/resources/application.yml`
 - Test: `apps/backend/src/test/java/com/example/ocr/repository/InvoiceRepositoryTest.java`
@@ -166,6 +167,9 @@ public class Invoice {
     private Double total;
     private String filePath;
 
+    @Enumerated(EnumType.STRING)
+    private InvoiceStatus status;
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "raw_payload", columnDefinition = "jsonb")
     private Map<String, Object> rawPayload;
@@ -175,6 +179,19 @@ public class Invoice {
 
     // Getters, setters, and constructors...
 }
+Create `apps/backend/src/main/java/com/example/ocr/model/InvoiceStatus.java`:
+```java
+package com.example.ocr.model;
+
+public enum InvoiceStatus {
+    PROCESSING,
+    VALIDATED,
+    WARNING,
+    FAILED_EXTRACTION,
+    CORRUPTED_FILE,
+    APPROVED
+}
+```
 ```
 Create `apps/backend/src/main/java/com/example/ocr/model/InvoiceItem.java`:
 ```java
