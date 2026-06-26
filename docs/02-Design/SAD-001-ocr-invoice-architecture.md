@@ -400,4 +400,29 @@ Hệ thống gửi yêu cầu dạng REST HTTPS POST tới Gemini API sử dụn
 }
 ```
 
+---
+
+## 8. Nguyên tắc ràng buộc triển khai (Architectural Guardrails)
+
+Nhằm ngăn chặn việc Model / Agent thực thi tự biên tự diễn (working outside of spec) khi triển khai code, các nguyên tắc sau bắt buộc phải được tuân thủ:
+
+### 8.1 Phương thức truy cập tệp tin hóa đơn (Storage serving)
+- **Ràng buộc:** Backend không được ghi cứng đường dẫn tệp cục bộ trả về cho Frontend (Next.js chạy ở port độc lập không thể đọc file tĩnh của Backend trực tiếp).
+- **Giải pháp:** Backend Flask bắt buộc phải cung cấp endpoint `/api/invoices/<int:invoice_id>/image` để stream file ảnh dưới dạng nhị phân thông qua `send_from_directory` từ thư mục tải lên cấu hình trước.
+
+### 8.2 Gọi Gemini Vision API bắt buộc dùng Structured Output
+- **Ràng buộc:** Tránh việc nhận chuỗi Markdown thô (ví dụ: ` ```json ... ``` `) rồi parse thủ công bằng Regex/String manipulation.
+- **Giải pháp:** Sử dụng chính xác SDK của Google (`google-generativeai`) hoặc gọi trực tiếp REST API với tham số `generationConfig` quy định `response_mime_type="application/json"` và truyền đầy đủ `response_schema` theo chuẩn Pydantic hoặc Schema Object quy định tại Mục 7.
+
+### 8.3 APScheduler Dev vs. Prod reloader
+- **Ràng buộc:** Để tránh việc Flask auto-reloader khởi động Scheduler 2 lần tại local hoặc chạy nhiều luồng polling song song khi chạy multi-worker ở Production:
+- **Giải pháp:** 
+  - Tại local dev: Chỉ chạy Scheduler nếu không dùng reloader hoặc kiểm tra biến môi trường của Werkzeug reloader chính: `if os.environ.get("WERKZEUG_RUN_MAIN") == "true":`.
+  - Quy mô hệ thống: Thiết kế tích hợp này chỉ chạy ở mức độ vừa và nhỏ. Khi scale, email polling phải được chạy độc lập như một daemon riêng.
+
+### 8.4 Ràng buộc Migration & Bảng dữ liệu
+- **Ràng buộc:** Triển khai đơn giản và nhanh chóng trên Dev, việc tạo bảng sẽ dùng `db.create_all()` bên trong khối lệnh khởi tạo Flask (trong điều kiện chạy Unit Tests hoặc Dev setup).
+- **Giải pháp:** Không tích hợp Alembic migrations vào lúc này để giữ thiết kế tối giản (YAGNI). Nếu có thay đổi cột dữ liệu ở pha sau, cần drop table và re-create thủ công để giảm thiểu phức tạp.
+
+
 
