@@ -19,7 +19,7 @@
 | 15 | Create PLAN-004 Implementation Plan (MCP Integrations) | ✅ done |
 | 16 | Task 1 (PLAN-02): Initialize Backend Project Structure (FastAPI, Python 3.11) | ✅ done |
 | 17 | Task 2 (PLAN-02): Configure PostgreSQL Database & SQLAlchemy Entity Models | ✅ done |
-| 18 | Task 1 (PLAN-04): Add Email Polling Dependencies in FastAPI | ⏳ pending |
+| 18 | Task 1 (PLAN-04): Add Email Polling Dependencies in FastAPI | ✅ done |
 | 19 | Task 2 (PLAN-04): Implement Mail Polling Scheduler Configuration | ⏳ pending |
 | 20 | Task 3 (PLAN-04): Implement EmailIntakeService and Attachment Extraction | ⏳ pending |
 | 21 | Task 4 (PLAN-04): Implement Hermes MCP Notification Client | ⏳ pending |
