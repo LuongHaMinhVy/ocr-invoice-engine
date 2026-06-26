@@ -27,3 +27,9 @@
 | 23 | Task 3 (PLAN-02): Initialize Next.js Frontend with ESLint & Husky | ⏳ pending |
 | 24 | Task 4 (PLAN-02): Implement Gemini API Client and Math Verification | ⏳ pending |
 | 25 | Task 5 (PLAN-02): Implement Next.js OCR Upload and History View Interface | ⏳ pending |
+| 26 | Task 1 (PLAN-05): Initialize User database entities & schemas | ⏳ pending |
+| 27 | Task 2 (PLAN-05): Implement Cryptography & Token Service | ⏳ pending |
+| 28 | Task 3 (PLAN-05): Configure Auth Routes & Protect Invoices Router | ⏳ pending |
+| 29 | Task 4 (PLAN-05): Setup CORS & API Rate Limiting | ⏳ pending |
+| 30 | Task 5 (PLAN-05): Integrate JWT login and authorization in Next.js Frontend | ⏳ pending |
+
