@@ -424,5 +424,9 @@ Nhằm ngăn chặn việc Model / Agent thực thi tự biên tự diễn (work
 - **Ràng buộc:** Triển khai đơn giản và nhanh chóng trên Dev, việc tạo bảng sẽ dùng `db.create_all()` bên trong khối lệnh khởi tạo Flask (trong điều kiện chạy Unit Tests hoặc Dev setup).
 - **Giải pháp:** Không tích hợp Alembic migrations vào lúc này để giữ thiết kế tối giản (YAGNI). Nếu có thay đổi cột dữ liệu ở pha sau, cần drop table và re-create thủ công để giảm thiểu phức tạp.
 
+### 8.5 Quy trình ghi nhận quyết định & sai lệch (ADR Logging)
+- **Ràng buộc:** Trong quá trình thực thi code thực tế, nếu Agent bắt buộc phải thay đổi cấu trúc thiết kế so với Đặc tả ban đầu hoặc có những quyết định kỹ thuật đánh đổi phát sinh mới:
+- **Giải pháp:** Agent **không được tự ý bỏ qua hay âm thầm thay đổi** mà bắt buộc phải tạo một tệp tin ghi nhận quyết định kiến trúc (**Architecture Decision Record - ADR**) trong thư mục `docs/04-Development/decisions/` theo mẫu quy định tại `docs/99-Templates/ADR-template.md`.
+
 
 
