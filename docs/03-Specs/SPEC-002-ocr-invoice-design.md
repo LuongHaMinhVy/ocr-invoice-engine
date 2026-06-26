@@ -1,4 +1,4 @@
-﻿---
+---
 id: SPEC-002
 title: OCR Invoice to JSON Processing Engine
 status: approved
@@ -71,4 +71,27 @@ Build an OCR engine that processes invoice images (VAT invoices, receipts, bills
 ## Security & Verification
 - Verify input file size (< 10MB) and type (PNG, JPEG, PDF).
 - Mathematical verification on backend: Sum(items.total) == subtotal; subtotal + vat == total.
-- Database storage of original image and JSON data in PostgreSQL.
+
+## Database Design (Hybrid Schema)
+We use a Hybrid Schema model in PostgreSQL to support structural queries while retaining maximum flexibility for varying invoice types:
+
+1. **`invoices` Table (Common Header Fields)**
+   - `id`: `SERIAL PRIMARY KEY`
+   - `vendor`: `VARCHAR(255) NOT NULL` (Seller name)
+   - `tax_code`: `VARCHAR(50)` (Vendor tax code, nullable for retail receipts)
+   - `invoice_number`: `VARCHAR(50)` (Nullable)
+   - `invoice_date`: `DATE` (Parsed date, YYYY-MM-DD)
+   - `subtotal`: `NUMERIC(15, 2)` (Subtotal before tax)
+   - `vat`: `NUMERIC(15, 2)` (Tax amount)
+   - `total`: `NUMERIC(15, 2)` (Total amount)
+   - `file_path`: `VARCHAR(500)` (Path to stored local/cloud image file)
+   - `raw_payload`: `JSONB` (Stores the entire raw JSON returned by Gemini API for flexibility)
+
+2. **`invoice_items` Table (Line Items)**
+   - `id`: `SERIAL PRIMARY KEY`
+   - `invoice_id`: `INTEGER REFERENCES invoices(id) ON DELETE CASCADE`
+   - `name`: `VARCHAR(500) NOT NULL` (Product/service name)
+   - `quantity`: `NUMERIC(12, 4)` (Support fractional quantities)
+   - `unit_price`: `NUMERIC(15, 2)`
+   - `total`: `NUMERIC(15, 2)` (Quantity * Unit Price)
+
