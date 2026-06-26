@@ -17,7 +17,13 @@
 | 13 | Task 5: Fix Internal References in Relocated Docs | ✅ done |
 | 14 | Create SPEC-003 Design Spec (MCP Integrations) | ✅ done |
 | 15 | Create PLAN-004 Implementation Plan (MCP Integrations) | ✅ done |
-| 16 | Task 1: Add Spring Integration Mail Dependencies | ⏳ pending |
-| 17 | Task 2: Implement Mail Configuration and Mail Receiver Config | ⏳ pending |
-| 18 | Task 3: Implement EmailIntakeService and Attachment Extraction | ⏳ pending |
-| 19 | Task 4: Setup PostgreSQL MCP Configuration Guide | ⏳ pending |
+| 16 | Task 1 (PLAN-02): Initialize Backend Project Structure (Gradle Groovy, Java 21) | ⏳ pending |
+| 17 | Task 2 (PLAN-02): Configure PostgreSQL Database & Hybrid Schema Entities | ⏳ pending |
+| 18 | Task 1 (PLAN-04): Add Spring Integration Mail Dependencies | ⏳ pending |
+| 19 | Task 2 (PLAN-04): Implement Mail Configuration and Mail Receiver Config | ⏳ pending |
+| 20 | Task 3 (PLAN-04): Implement EmailIntakeService and Attachment Extraction | ⏳ pending |
+| 21 | Task 4 (PLAN-04): Setup PostgreSQL MCP Configuration Guide | ⏳ pending |
+| 22 | Task 3 (PLAN-02): Initialize Next.js Frontend with ESLint & Husky | ⏳ pending |
+| 23 | Task 4 (PLAN-02): Define Invoice Model & Mock Gemini Vision API Client | ⏳ pending |
+| 24 | Task 5 (PLAN-02): Implement Real Gemini API Client & Hermes MCP Integrator | ⏳ pending |
+| 25 | Task 6 (PLAN-02): Implement Endpoints and Next.js Front-End Integration | ⏳ pending |
