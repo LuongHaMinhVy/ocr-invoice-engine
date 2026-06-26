@@ -4,9 +4,9 @@
 
 **Goal:** Implement automated invoice intake by polling email attachments via Python IMAP (using APScheduler) and set up PostgreSQL MCP server for database validation.
 
-**Architecture:** Initialize APScheduler in Flask, schedule an EmailIntakeService that connects via IMAP to poll unread emails for image/PDF attachments, saves them to temporary storage, and routes them to the OCR engine. Configure Postgres MCP server in settings.
+**Architecture:** Initialize APScheduler inside the FastAPI lifespan context manager to start and stop the scheduler automatically. Schedule an EmailIntakeService that connects via IMAP to poll unread emails for image/PDF attachments, saves them to temporary storage, and routes them to the OCR engine. Configure Postgres MCP server in settings.
 
-**Tech Stack:** Python 3.11+, APScheduler, imaplib, email, PostgreSQL MCP.
+**Tech Stack:** Python 3.11+, FastAPI, APScheduler, imaplib, email, PostgreSQL MCP, requests.
 
 ---
 
@@ -36,7 +36,7 @@ Expected: SUCCESS
 **Step 4: Commit**
 ```bash
 git add apps/backend/requirements.txt
-git commit -m "feat: add Flask backend APScheduler dependencies"
+git commit -m "feat: add FastAPI backend APScheduler dependencies"
 ```
 
 ---
@@ -46,7 +46,7 @@ git commit -m "feat: add Flask backend APScheduler dependencies"
 **Files:**
 - Create: `apps/backend/app/scheduler/__init__.py`
 - Create: `apps/backend/app/scheduler/jobs.py`
-- Modify: `apps/backend/app/__init__.py`
+- Modify: `apps/backend/main.py`
 - Test: `apps/backend/tests/test_scheduler.py`
 
 **Step 1: Write the failing test**
@@ -70,36 +70,42 @@ def email_polling_job():
 from apscheduler.schedulers.background import BackgroundScheduler
 from app.scheduler.jobs import email_polling_job
 
-def init_scheduler(app):
+def init_scheduler():
     scheduler = BackgroundScheduler()
     # Poll every 5 minutes
     scheduler.add_job(email_polling_job, 'interval', minutes=5, id='email_poll_job')
     scheduler.start()
     return scheduler
+
+def shutdown_scheduler(scheduler):
+    if scheduler and scheduler.running:
+        scheduler.shutdown()
 ```
 
-3. Modify `apps/backend/app/__init__.py` to initialize the scheduler:
+3. Modify `apps/backend/main.py` to register the scheduler inside a lifespan context manager:
 ```python
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from config import Config
-from app.scheduler import init_scheduler
+from contextlib import asynccontextmanager
+from fastapi import FastAPI
+from app.routers.invoices import router as invoices_router
+from app.database import engine, Base
+from app.scheduler import init_scheduler, shutdown_scheduler
 
-db = SQLAlchemy()
+Base.metadata.create_all(bind=engine)
 
-def create_app():
-    app = Flask(__name__)
-    app.config.from_object(Config)
-    db.init_app(app)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Skip scheduler in testing/reload if needed, or run once
+    scheduler = init_scheduler()
+    yield
+    shutdown_scheduler(scheduler)
 
-    # Initialize background scheduler (skip in testing mode)
-    if not app.config.get("TESTING"):
-        init_scheduler(app)
+app = FastAPI(title="OCR Invoice Processing API", lifespan=lifespan)
 
-    from app.routes.invoices import invoices_bp
-    app.register_blueprint(invoices_bp, url_prefix="/api/invoices")
+app.include_router(invoices_router)
 
-    return app
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", port=8000, reload=True)
 ```
 
 **Step 3: Run test to verify passes**
@@ -111,8 +117,8 @@ Expected: PASS
 
 **Step 4: Commit**
 ```bash
-git add apps/backend/app/scheduler/ apps/backend/app/__init__.py apps/backend/tests/test_scheduler.py
-git commit -m "feat: configure background APScheduler for email polling"
+git add apps/backend/app/scheduler/ apps/backend/main.py apps/backend/tests/test_scheduler.py
+git commit -m "feat: configure background APScheduler for email polling in FastAPI lifespan"
 ```
 
 ---

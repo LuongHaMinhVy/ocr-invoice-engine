@@ -14,7 +14,7 @@ Provide automated intake of invoice files via email mailbox polling and allow di
 ## 2. Architecture & Data Flow
 
 ### 2.1 Email Intake (Python Native IMAP)
-The email intake flow runs natively in the Flask backend using a background scheduler (APScheduler).
+The email intake flow runs natively in the FastAPI backend using a background scheduler (APScheduler).
 
 ```
 +--------------------+
@@ -57,7 +57,7 @@ Dành riêng cho quá trình phát triển và kiểm tra dữ liệu bằng Age
   - Thực thi các câu lệnh SELECT để đối chiếu dữ liệu trích xuất thực tế (`query`).
 
 ### 2.3 Hermes MCP Notification Integration
-Backend Flask gửi thông báo tự động thông qua việc gửi yêu cầu HTTP POST tới REST bridge của Hermes MCP hoặc gọi trực tiếp công cụ `messages_send` để đẩy tin nhắn qua Telegram/Slack:
+Backend FastAPI gửi thông báo tự động thông qua việc gửi yêu cầu HTTP POST tới REST bridge của Hermes MCP hoặc gọi trực tiếp công cụ `messages_send` để đẩy tin nhắn qua Telegram/Slack:
 - **Cấu hình Target:** Đọc từ biến môi trường `HERMES_NOTIFICATION_TARGET` (ví dụ: `telegram:-1002148765432` hoặc `slack:#invoice-notifications`).
 - **Nội dung tin nhắn:**
   ```

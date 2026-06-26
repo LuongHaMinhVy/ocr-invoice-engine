@@ -9,13 +9,13 @@ date: 2026-06-25
 # SPEC-002: OCR Invoice to JSON Processing Engine
 
 ## Goal
-Build an OCR engine that processes invoice images (VAT invoices, receipts, bills) and extracts structured JSON data using Gemini Vision API, wrapped in a Flask backend and presented with a Next.js frontend.
+Build an OCR engine that processes invoice images (VAT invoices, receipts, bills) and extracts structured JSON data using Gemini Vision API, wrapped in a FastAPI backend and presented with a Next.js frontend.
 
 ## Architecture
 
 ```
 ┌─────────────┐     POST /api/extract      ┌──────────────────┐     Gemini API      ┌─────────────┐
-│   Next.js   │  ────────────────────────>  │     Flask        │  ────────────────>  │   Gemini    │
+│   Next.js   │  ────────────────────────>  │    FastAPI       │  ────────────────>  │   Gemini    │
 │  (Frontend) │  <────────────────────────  │   (Backend)      │  <────────────────  │  Vision API │
 │             │     JSON response           │                  │     JSON result     │             │
 └─────────────┘                             └──────────────────┘                     └─────────────┘
@@ -35,7 +35,7 @@ Build an OCR engine that processes invoice images (VAT invoices, receipts, bills
    - History list to review previous extractions.
    - Code standards: **ESLint** & **Husky** pre-commit hooks.
 
-2. **Backend (Flask)**:
+2. **Backend (FastAPI)**:
    - Built with **Python 3.11/3.12**.
    - REST API endpoints for upload, extraction, and history.
    - Gemini Client: Integrates with Gemini 1.5 Flash/Pro using structured JSON output.

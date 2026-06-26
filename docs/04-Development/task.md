@@ -17,9 +17,9 @@
 | 13 | Task 5: Fix Internal References in Relocated Docs | ✅ done |
 | 14 | Create SPEC-003 Design Spec (MCP Integrations) | ✅ done |
 | 15 | Create PLAN-004 Implementation Plan (MCP Integrations) | ✅ done |
-| 16 | Task 1 (PLAN-02): Initialize Backend Project Structure (Flask, Python 3.11) | ⏳ pending |
+| 16 | Task 1 (PLAN-02): Initialize Backend Project Structure (FastAPI, Python 3.11) | ⏳ pending |
 | 17 | Task 2 (PLAN-02): Configure PostgreSQL Database & SQLAlchemy Entity Models | ⏳ pending |
-| 18 | Task 1 (PLAN-04): Add Email Polling Dependencies in Flask | ⏳ pending |
+| 18 | Task 1 (PLAN-04): Add Email Polling Dependencies in FastAPI | ⏳ pending |
 | 19 | Task 2 (PLAN-04): Implement Mail Polling Scheduler Configuration | ⏳ pending |
 | 20 | Task 3 (PLAN-04): Implement EmailIntakeService and Attachment Extraction | ⏳ pending |
 | 21 | Task 4 (PLAN-04): Implement Hermes MCP Notification Client | ⏳ pending |
