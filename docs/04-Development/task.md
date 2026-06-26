@@ -17,7 +17,7 @@
 | 13 | Task 5: Fix Internal References in Relocated Docs | ✅ done |
 | 14 | Create SPEC-003 Design Spec (MCP Integrations) | ✅ done |
 | 15 | Create PLAN-004 Implementation Plan (MCP Integrations) | ✅ done |
-| 16 | Task 1 (PLAN-02): Initialize Backend Project Structure (Gradle Groovy, Java 21) | ⏳ pending |
+| 16 | Task 1 (PLAN-02): Initialize Backend Project Structure (Gradle Groovy, Java 21) | ⏳ in_progress |
 | 17 | Task 2 (PLAN-02): Configure PostgreSQL Database & Hybrid Schema Entities | ⏳ pending |
 | 18 | Task 1 (PLAN-04): Add Spring Integration Mail Dependencies | ⏳ pending |
 | 19 | Task 2 (PLAN-04): Implement Mail Configuration and Mail Receiver Config | ⏳ pending |
