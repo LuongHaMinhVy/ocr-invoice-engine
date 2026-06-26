@@ -139,8 +139,71 @@ Run: `cd apps/backend && gradle test --tests "com.example.ocr.repository.Invoice
 Expected: FAIL (Compilation error - missing Entity/Repository classes).
 
 **Step 3: Write minimal implementation**
-Create Entity `apps/backend/src/main/java/com/example/ocr/model/Invoice.java` (using JPA annotations `@Entity`, `@Id`, `@GeneratedValue`) and Repository `apps/backend/src/main/java/com/example/ocr/repository/InvoiceRepository.java`.
+Create Entity `apps/backend/src/main/java/com/example/ocr/model/Invoice.java` mapping the hybrid schema. Use Hibernate 6's JSON support for the `raw_payload` column:
+```java
+package com.example.ocr.model;
+
+import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+
+@Entity
+@Table(name = "invoices")
+public class Invoice {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    private String vendor;
+    private String taxCode;
+    private String invoiceNumber;
+    private LocalDate invoiceDate;
+    private Double subtotal;
+    private Double vat;
+    private Double total;
+    private String filePath;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "raw_payload", columnDefinition = "jsonb")
+    private Map<String, Object> rawPayload;
+
+    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<InvoiceItem> items;
+
+    // Getters, setters, and constructors...
+}
+```
+Create `apps/backend/src/main/java/com/example/ocr/model/InvoiceItem.java`:
+```java
+package com.example.ocr.model;
+
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "invoice_items")
+public class InvoiceItem {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "invoice_id")
+    private Invoice invoice;
+
+    private String name;
+    private Double quantity;
+    private Double unitPrice;
+    private Double total;
+
+    // Getters, setters, and constructors...
+}
+```
+Create Repository `apps/backend/src/main/java/com/example/ocr/repository/InvoiceRepository.java`.
 Configure local H2 database for tests and PostgreSQL parameters in `application.yml`.
+
 
 **Step 4: Run test to verify it passes**
 Run: `cd apps/backend && gradle test --tests "com.example.ocr.repository.InvoiceRepositoryTest"`
