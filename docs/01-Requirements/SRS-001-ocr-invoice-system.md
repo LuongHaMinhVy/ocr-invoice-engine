@@ -78,6 +78,26 @@ graph TD
   - Cột bên phải hiển thị Form chứa các thông tin đã trích xuất, cho phép chỉnh sửa từng ô nhập liệu.
 - **FR-04.3:** **Hành động Phê duyệt (Approve Action):** Cho phép Kế toán viên chỉnh sửa các ô nhập liệu sai sót và bấm nút "Phê duyệt" để lưu trạng thái cuối cùng (`APPROVED`) vào database.
 
+### 3.5 Chi tiết Kịch bản Sử dụng (Use Case Details)
+
+- **UC-01 (Tự động Thu thập & Trích xuất):**
+  - *Tác nhân:* Hệ thống (Automated Scheduler).
+  - *Luồng chính:* 
+    1. Định kỳ quét hòm thư IMAP tìm thư chưa đọc chứa tệp đính kèm.
+    2. Tải tệp đính kèm, lưu vào ổ đĩa dự án và tạo bản ghi trạng thái `PROCESSING`.
+    3. Gửi tệp sang Gemini API kèm JSON Schema định sẵn.
+    4. Nhận kết quả JSON, thực hiện xác thực toán học.
+    5. Cập nhật bản ghi với thông tin chi tiết và trạng thái tương ứng (`VALIDATED` hoặc `WARNING`).
+    6. Gửi thông báo tóm tắt qua Hermes MCP đến Telegram của đội ngũ kế toán.
+- **UC-02 (Đối chiếu & Phê duyệt thủ công):**
+  - *Tác nhân:* Kế toán viên (Accountant).
+  - *Luồng chính:*
+    1. Kế toán truy cập Dashboard Next.js, xem danh sách hóa đơn.
+    2. Chọn một hóa đơn có trạng thái `WARNING` hoặc `VALIDATED`.
+    3. Hệ thống hiển thị ảnh hóa đơn gốc song song với form nhập liệu.
+    4. Kế toán viên đối chiếu, chỉnh sửa các thông số bị lệch (nếu có).
+    5. Bấm nút **"Phê duyệt"**. Hệ thống lưu dữ liệu cập nhật và đổi trạng thái thành `APPROVED`.
+
 ---
 
 ## 4. Đặc tả Cấu trúc Dữ liệu JSON (Data Schema)
