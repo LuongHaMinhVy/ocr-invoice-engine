@@ -80,6 +80,42 @@ graph TD
 
 ### 3.5 Chi tiết Kịch bản Sử dụng (Use Case Details)
 
+```mermaid
+graph TD
+    %% Actors
+    subgraph Actors [Tác nhân]
+        Emp[Nhân viên gửi hóa đơn]
+        Acc[Kế toán viên]
+        Sys[Hệ thống tự động]
+    end
+
+    %% Use Cases
+    subgraph UseCases [Kịch bản sử dụng]
+        UC1(Gửi email kèm hóa đơn)
+        UC2(Tự động tải & trích xuất OCR)
+        UC3(Tính toán xác thực số liệu)
+        UC4(Gửi thông báo kết quả)
+        UC5(Xem danh sách hóa đơn)
+        UC6(Đối chiếu song song)
+        UC7(Chỉnh sửa & Phê duyệt hóa đơn)
+        UC8(Trích xuất lại hóa đơn lỗi)
+    end
+
+    %% Connections
+    Emp --> UC1
+    Sys --> UC2
+    Sys --> UC3
+    Sys --> UC4
+    
+    UC2 --> UC3
+    UC3 --> UC4
+
+    Acc --> UC5
+    Acc --> UC6
+    Acc --> UC7
+    Acc --> UC8
+```
+
 - **UC-01 (Tự động Thu thập & Trích xuất):**
   - *Tác nhân:* Hệ thống (Automated Scheduler).
   - *Luồng chính:* 
