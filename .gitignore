@@ -1,2 +1,6 @@
+.agent/
+.agent-workflow/
+.gpt-cache/
+.gemini/
 .obsidian/
 .worktrees/

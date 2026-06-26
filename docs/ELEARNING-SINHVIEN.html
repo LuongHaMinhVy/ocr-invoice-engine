@@ -334,7 +334,7 @@ function closeNav(){document.getElementById('sidebar').classList.remove('open');
 
 /* ============ Init ============ */
 buildNav();refreshProgress();
-const h=location.hash.replace('#','');
+const h = location.hash.replace('#','');
 if(h && flat.some(m=>m.id===h))openModule(h);else goHome();
 </script>
 </body>
