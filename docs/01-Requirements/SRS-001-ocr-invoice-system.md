@@ -123,3 +123,25 @@ Cấu trúc JSON đầu ra yêu cầu từ Gemini API và lưu trữ trong DB:
   - `apps/frontend/`: Next.js 14.2.x/15.x, TypeScript.
 - **NFR-03.2:** Frontend phải áp dụng công cụ **ESLint** để kiểm tra tĩnh mã nguồn và cấu hình **Husky hook** chặn commit nếu có lỗi Lint hoặc định dạng.
 - **NFR-03.3:** Toàn bộ tiến trình phát triển phải tuân thủ nghiêm ngặt mô hình **TDD (Test-Driven Development)**: viết test lỗi trước, viết code sau, chạy test xanh mới commit.
+
+---
+
+## 6. Xử lý Ngoại lệ & Kịch bản Lỗi (Exception Flows)
+
+### 6.1 Lỗi Hệ thống ngoài (External Services Failures)
+- **EX-01.1 (Gemini API Failure):** Khi kết nối Gemini API bị timeout hoặc hết quota, hệ thống:
+  - Lưu hóa đơn với trạng thái `FAILED_EXTRACTION`.
+  - Bắn thông báo lỗi chi tiết qua Hermes MCP (Telegram/Slack) để quản trị viên kiểm tra.
+  - Cung cấp nút **"Trích xuất lại (Retry)"** trên Frontend để gửi lại ảnh sang Gemini mà không cần upload lại file.
+- **EX-01.2 (Email Connection Loss):** Nếu kết nối tới IMAP Server bị lỗi (mất mạng, sai mật khẩu):
+  - Ghi nhận Error Log và kích hoạt cơ chế retry tự động sau chu kỳ quét tiếp theo.
+  - Không làm sập ứng dụng Backend Spring Boot.
+
+### 6.2 Lỗi Nghiệp vụ & Dữ liệu (Data & Business Validation Failures)
+- **EX-02.1 (Math Validation Mismatch):** Nếu tổng các dòng hàng không khớp Subtotal hoặc Subtotal + Thuế không khớp Total:
+  - Hệ thống lưu hóa đơn với trạng thái `WARNING`.
+  - Trên giao diện Next.js, tô đỏ/highlight các trường bị lệch số liệu để kế toán viên phát hiện ngay lập tức và chỉnh sửa thủ công.
+- **EX-02.2 (File Format / Corrupted File Error):** Nếu nhân viên đính kèm file lỗi hoặc định dạng không đúng (ví dụ: file zip hoặc file docx giả dạng ảnh):
+  - Đánh dấu trạng thái hóa đơn là `CORRUPTED_FILE`.
+  - Gửi thông báo từ chối trực tiếp qua Telegram, nêu rõ tiêu đề thư và tên file bị lỗi để người gửi biết và cập nhật lại.
+

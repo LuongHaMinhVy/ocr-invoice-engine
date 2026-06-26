@@ -183,3 +183,39 @@ ocr-invoice-engine/
 │   └── 04-Development/      # PLAN-002, PLAN-04, task.md
 └── .gitignore
 ```
+
+---
+
+## 5. Thiết kế Xử lý Ngoại lệ & Kỹ thuật Resilience (Exception & Resilience Design)
+
+Để đảm bảo hệ thống chạy bền bỉ không bị sập giữa chừng, các thành phần kiến trúc xử lý lỗi được thiết kế như sau:
+
+### 5.1 Exception Handling ở Backend (Spring Boot)
+- **`GlobalExceptionHandler`:** Sử dụng `@RestControllerAdvice` để bắt toàn bộ các lỗi runtime (ví dụ: `MethodArgumentNotValidException`, `ResourceNotFoundException`, `GeminiApiException`). Trả về mã lỗi HTTP chuẩn hóa kèm thông báo dạng JSON:
+  ```json
+  {
+    "timestamp": "ISO-8601-Format",
+    "status": 400,
+    "error": "Bad Request",
+    "message": "Chi tiết thông báo lỗi thân thiện",
+    "code": "ERROR_CODE_SPECIFIC"
+  }
+  ```
+- **IMAP Polling Resilience:** Sử dụng cơ chế phục hồi lỗi của Spring Integration (`ErrorChannel`). Khi có lỗi kết nối hòm thư IMAP:
+  - Sự kiện lỗi được gửi về `errorChannel`.
+  - Một handler sẽ ghi nhận Error Log và kích hoạt bộ đếm thời gian thử lại (Exponential Backoff) mà không làm ngắt luồng polling chính.
+- **Quản lý Trạng thái Hóa đơn (`InvoiceStatus` Enum):**
+  - `PROCESSING`: File mới được Intake tải về, chưa gửi qua Gemini.
+  - `VALIDATED`: Gemini phân tích thành công và vượt qua kiểm tra toán học.
+  - `WARNING`: Gemini phân tích thành công nhưng sai lệch số liệu hoặc thiếu trường bắt buộc.
+  - `FAILED_EXTRACTION`: Lỗi kết nối Gemini API, cho phép thử lại.
+  - `CORRUPTED_FILE`: Tệp đính kèm bị lỗi định dạng hoặc không thể đọc được.
+  - `APPROVED`: Kế toán viên đã đối chiếu và duyệt lưu trữ cuối cùng.
+
+### 5.2 Xử lý lỗi ở Frontend (Next.js)
+- **React Error Boundary:** Các trang Dashboard và View được bọc bởi Error Boundary. Nếu có lỗi render (ví dụ: file PDF lỗi gây sập viewer), ứng dụng chỉ render giao diện fallback thông báo lỗi cục bộ, không làm sập toàn bộ trang web.
+- **Highlight Sai lệch Số liệu:** Khi nhận dữ liệu từ Backend có trạng thái `WARNING`, Next.js Frontend sẽ so sánh:
+  - Nếu `sum(items.total) != subtotal`, tô viền đỏ trường `subtotal`.
+  - Nếu `subtotal + vat != total`, tô viền đỏ trường `total` và `vat`.
+- **Nút bấm Thử lại (Retry Action):** Nút bấm sẽ gọi API endpoint `/api/invoices/{id}/retry` để Backend thực hiện gửi lại file ảnh sang Gemini API, cập nhật trực tiếp dữ liệu trên màn hình mà không cần upload lại file thủ công.
+
