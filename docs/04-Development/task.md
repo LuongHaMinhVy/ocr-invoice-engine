@@ -20,7 +20,7 @@
 | 16 | Task 1 (PLAN-02): Initialize Backend Project Structure (FastAPI, Python 3.11) | ✅ done |
 | 17 | Task 2 (PLAN-02): Configure PostgreSQL Database & SQLAlchemy Entity Models | ✅ done |
 | 18 | Task 1 (PLAN-04): Add Email Polling Dependencies in FastAPI | ✅ done |
-| 19 | Task 2 (PLAN-04): Implement Mail Polling Scheduler Configuration | ⏳ pending |
+| 19 | Task 2 (PLAN-04): Implement Mail Polling Scheduler Configuration | ⏳ in_progress |
 | 20 | Task 3 (PLAN-04): Implement EmailIntakeService and Attachment Extraction | ⏳ pending |
 | 21 | Task 4 (PLAN-04): Implement Hermes MCP Notification Client | ⏳ pending |
 | 22 | Task 5 (PLAN-04): Setup PostgreSQL MCP Configuration Guide | ⏳ pending |
@@ -35,7 +35,7 @@
 | 31 | Task 1 (PLAN-06): Backup and Migrate Backend Files to the Submodule | ✅ done |
 | 32 | Task 2 (PLAN-06): Clean up Parent Repository Backend Files | ✅ done |
 | 33 | Task 3 (PLAN-06): Setup Backend Virtual Environment and Dependencies | ✅ done |
-| 34 | Task 4 (PLAN-06): Implement Invoice Upload API & Local Storage | ⏳ in_progress |
+| 34 | Task 4 (PLAN-06): Implement Invoice Upload API & Local Storage | ✅ done |
 | 35 | Task 5 (PLAN-06): Implement Image Streaming and CRUD Approval | ⏳ pending |
 
 
