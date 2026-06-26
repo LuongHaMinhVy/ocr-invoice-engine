@@ -9,13 +9,13 @@ date: 2026-06-25
 # SPEC-002: OCR Invoice to JSON Processing Engine
 
 ## Goal
-Build an OCR engine that processes invoice images (VAT invoices, receipts, bills) and extracts structured JSON data using Gemini Vision API, wrapped in a Spring Boot backend and presented with a Next.js frontend.
+Build an OCR engine that processes invoice images (VAT invoices, receipts, bills) and extracts structured JSON data using Gemini Vision API, wrapped in a Flask backend and presented with a Next.js frontend.
 
 ## Architecture
 
 ```
 ┌─────────────┐     POST /api/extract      ┌──────────────────┐     Gemini API      ┌─────────────┐
-│   Next.js   │  ────────────────────────>  │   Spring Boot    │  ────────────────>  │   Gemini    │
+│   Next.js   │  ────────────────────────>  │     Flask        │  ────────────────>  │   Gemini    │
 │  (Frontend) │  <────────────────────────  │   (Backend)      │  <────────────────  │  Vision API │
 │             │     JSON response           │                  │     JSON result     │             │
 └─────────────┘                             └──────────────────┘                     └─────────────┘
@@ -35,8 +35,8 @@ Build an OCR engine that processes invoice images (VAT invoices, receipts, bills
    - History list to review previous extractions.
    - Code standards: **ESLint** & **Husky** pre-commit hooks.
 
-2. **Backend (Spring Boot)**:
-   - Built with **Gradle (Groovy DSL)**.
+2. **Backend (Flask)**:
+   - Built with **Python 3.11/3.12**.
    - REST API endpoints for upload, extraction, and history.
    - Gemini Client: Integrates with Gemini 1.5 Flash/Pro using structured JSON output.
    - Database: **PostgreSQL** storing metadata, invoice file paths/storage refs, and extracted structured JSON data.

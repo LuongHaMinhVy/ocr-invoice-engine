@@ -175,7 +175,7 @@ Cấu trúc JSON đầu ra yêu cầu từ Gemini API và lưu trữ trong DB:
 
 ### 5.3 Khả năng Bảo trì & Tiêu chuẩn Code (Maintainability)
 - **NFR-03.1:** Dự án tổ chức theo mô hình Monorepo rõ ràng:
-  - `apps/backend/`: Spring Boot, Java 21, Gradle Groovy.
+  - `apps/backend/`: Flask, Python 3.11/3.12.
   - `apps/frontend/`: Next.js 14.2.x/15.x, TypeScript.
 - **NFR-03.2:** Frontend phải áp dụng công cụ **ESLint** để kiểm tra tĩnh mã nguồn và cấu hình **Husky hook** chặn commit nếu có lỗi Lint hoặc định dạng.
 - **NFR-03.3:** Toàn bộ tiến trình phát triển phải tuân thủ nghiêm ngặt mô hình **TDD (Test-Driven Development)**: viết test lỗi trước, viết code sau, chạy test xanh mới commit.
@@ -191,7 +191,7 @@ Cấu trúc JSON đầu ra yêu cầu từ Gemini API và lưu trữ trong DB:
   - Cung cấp nút **"Trích xuất lại (Retry)"** trên Frontend để gửi lại ảnh sang Gemini mà không cần upload lại file.
 - **EX-01.2 (Email Connection Loss):** Nếu kết nối tới IMAP Server bị lỗi (mất mạng, sai mật khẩu):
   - Ghi nhận Error Log và kích hoạt cơ chế retry tự động sau chu kỳ quét tiếp theo.
-  - Không làm sập ứng dụng Backend Spring Boot.
+  - Không làm sập ứng dụng Backend Flask.
 
 ### 6.2 Lỗi Nghiệp vụ & Dữ liệu (Data & Business Validation Failures)
 - **EX-02.1 (Math Validation Mismatch):** Nếu tổng các dòng hàng không khớp Subtotal hoặc Subtotal + Thuế không khớp Total:

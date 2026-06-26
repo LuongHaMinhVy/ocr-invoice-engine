@@ -13,8 +13,8 @@ Provide automated intake of invoice files via email mailbox polling and allow di
 
 ## 2. Architecture & Data Flow
 
-### 2.1 Email Intake (Spring Boot Native IMAP)
-The email intake flow runs natively in the Spring Boot backend using a background scheduler.
+### 2.1 Email Intake (Python Native IMAP)
+The email intake flow runs natively in the Flask backend using a background scheduler (APScheduler).
 
 ```
 +--------------------+
@@ -25,8 +25,8 @@ The email intake flow runs natively in the Spring Boot backend using a backgroun
           | Polling (every 5 minutes)
           v
 +---------+----------+
-| Spring Boot IMAP   |
-| Mail Receiver      |
+|   Python IMAP      |
+|  Mail Receiver      |
 +---------+----------+
           |
           | Extracts attachments
@@ -43,14 +43,14 @@ The email intake flow runs natively in the Spring Boot backend using a backgroun
 +--------------------+
 ```
 
-- **Configuration:** Cấu hình qua `application.yml` (mail server host, port, username, password, protocol=imaps, folder=INBOX).
+- **Configuration:** Cấu hình qua `.env` (mail server host, port, username, password, protocol=imaps, folder=INBOX).
 - **Security:** Sử dụng TLS/SSL để kết nối với mail server.
 - **Handling:** Lọc chỉ lấy email có tệp đính kèm dạng hình ảnh (`image/*`) hoặc PDF (`application/pdf`). Sau khi xử lý xong, đánh dấu thư là đã đọc (Read) hoặc di chuyển thư vào thư mục `processed/` để tránh xử lý lặp lại.
 
 ### 2.2 PostgreSQL Database MCP
 Dành riêng cho quá trình phát triển và kiểm tra dữ liệu bằng Agent:
 - **Server:** `@modelcontextprotocol/server-postgres`
-- **Cấu hình kết nối:** Kết nối trực tiếp đến PostgreSQL database của dự án (`jdbc:postgresql://localhost:5432/ocr_invoice`).
+- **Cấu hình kết nối:** Kết nối trực tiếp đến PostgreSQL database của dự án (`postgresql://localhost:5432/ocr_invoice`).
 - **Khả năng hỗ trợ:** Agent có thể chạy các tool của Postgres MCP để:
   - Xem danh sách bảng (`list_tables`).
   - Xem schema của bảng hóa đơn (`describe_table`).
@@ -59,7 +59,7 @@ Dành riêng cho quá trình phát triển và kiểm tra dữ liệu bằng Age
 ---
 
 ## 3. Tech Stack
-- **Backend:** `org.springframework.boot:spring-boot-starter-integration`, `org.springframework.integration:spring-integration-mail`, `com.sun.mail:jakarta.mail`.
+- **Backend:** Python Standard Library `imaplib`, `email`, và `APScheduler`.
 - **Database MCP:** Node.js, `@modelcontextprotocol/server-postgres`.
 
 ---

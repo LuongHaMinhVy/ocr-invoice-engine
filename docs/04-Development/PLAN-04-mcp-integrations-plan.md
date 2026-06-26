@@ -2,106 +2,117 @@
 
 > **For Antigravity:** REQUIRED WORKFLOW: Use `.agent/workflows/execute-plan.md` to execute this plan in single-flow mode.
 
-**Goal:** Implement automated invoice intake by polling email attachments via Spring Integration IMAP and set up PostgreSQL MCP server for database validation.
+**Goal:** Implement automated invoice intake by polling email attachments via Python IMAP (using APScheduler) and set up PostgreSQL MCP server for database validation.
 
-**Architecture:** Add Spring Mail/Integration dependencies, implement an EmailIntakeService that polls unread emails for image/PDF attachments, saves them to temporary storage, and routes them to the OCR engine. Configure Postgres MCP server in settings.
+**Architecture:** Initialize APScheduler in Flask, schedule an EmailIntakeService that connects via IMAP to poll unread emails for image/PDF attachments, saves them to temporary storage, and routes them to the OCR engine. Configure Postgres MCP server in settings.
 
-**Tech Stack:** Spring Boot, Spring Integration Mail, JavaMail, PostgreSQL MCP.
+**Tech Stack:** Python 3.11+, APScheduler, imaplib, email, PostgreSQL MCP.
 
 ---
 
-### Task 1: Add Spring Integration Mail Dependencies
+### Task 1: Add Email Polling Dependencies
 
 **Files:**
-- Modify: `apps/backend/build.gradle`
+- Modify: `apps/backend/requirements.txt`
 
 **Step 1: Write the failing test / check dependency presence**
-Verify that the `spring-boot-starter-integration` and `spring-integration-mail` are not yet in the project.
+Verify that `apscheduler` package is not yet in requirements.txt.
 Run:
 ```powershell
-Select-String -Path apps/backend/build.gradle -Pattern "spring-integration-mail"
+Select-String -Path apps/backend/requirements.txt -Pattern "apscheduler"
 ```
 Expected: Pattern not found / blank output.
 
-**Step 2: Add dependencies to build.gradle**
-Add the following to the dependencies section:
-```groovy
-implementation 'org.springframework.boot:spring-boot-starter-integration'
-implementation 'org.springframework.integration:spring-integration-mail'
-```
+**Step 2: Add dependencies to requirements.txt**
+Verify `apscheduler` is listed in requirements.txt (added in Task 1 of PLAN-002). If not, append it.
 
-**Step 3: Run build to verify dependencies compile successfully**
+**Step 3: Run pip install to verify dependencies compile successfully**
 Run:
 ```powershell
-./gradlew build -x test
+pip install -r apps/backend/requirements.txt
 ```
-Expected: BUILD SUCCESSFUL
+Expected: SUCCESS
 
 **Step 4: Commit**
 ```bash
-git add apps/backend/build.gradle
-git commit -m "feat: add Spring Integration Mail dependencies"
+git add apps/backend/requirements.txt
+git commit -m "feat: add Flask backend APScheduler dependencies"
 ```
 
 ---
 
-### Task 2: Implement Mail Configuration and Mail Receiver Config
+### Task 2: Implement Mail Polling Scheduler Configuration
 
 **Files:**
-- Create: `apps/backend/src/main/resources/application-mail.yml`
-- Create: `apps/backend/src/main/java/com/example/ocr/config/MailReceiverConfig.java`
+- Create: `apps/backend/app/scheduler/__init__.py`
+- Create: `apps/backend/app/scheduler/jobs.py`
+- Modify: `apps/backend/app/__init__.py`
+- Test: `apps/backend/tests/test_scheduler.py`
 
 **Step 1: Write the failing test**
-Create a config test file `apps/backend/src/test/java/com/example/ocr/config/MailReceiverConfigTest.java` that asserts the MailReceiver bean is initialized.
+Create a scheduler test file `apps/backend/tests/test_scheduler.py` that asserts the APScheduler is configured and has our email polling job registered.
 Run:
 ```powershell
-./gradlew test --tests com.example.ocr.config.MailReceiverConfigTest
+pytest apps/backend/tests/test_scheduler.py -v
 ```
-Expected: FAIL due to missing config classes.
+Expected: FAIL due to missing scheduler modules.
 
-**Step 2: Implement MailReceiverConfig**
-Create `MailReceiverConfig.java` and expose the IMAP integration flow:
-```java
-package com.example.ocr.config;
+**Step 2: Implement scheduler setup**
+1. Create `apps/backend/app/scheduler/jobs.py`:
+```python
+def email_polling_job():
+    # Job execution placeholder
+    pass
+```
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.integration.dsl.IntegrationFlow;
-import org.springframework.integration.mail.dsl.Mail;
+2. Create `apps/backend/app/scheduler/__init__.py`:
+```python
+from apscheduler.schedulers.background import BackgroundScheduler
+from app.scheduler.jobs import email_polling_job
 
-@Configuration
-public class MailReceiverConfig {
-    @Bean
-    public IntegrationFlow imapMailFlow() {
-        // Basic configuration skeleton for IMAP polling
-        return IntegrationFlow.from(
-            Mail.imapInboundAdapter("imaps://imap.gmail.com:993/INBOX")
-                .searchTermStrategy((supportedFlags, folder) -> {
-                    try {
-                        return new jakarta.mail.search.FlagTerm(new jakarta.mail.Flags(jakarta.mail.Flags.Flag.SEEN), false);
-                    } catch (Exception e) {
-                        throw new IllegalStateException(e);
-                    }
-                }),
-            e -> e.poller(p -> p.fixedDelay(300000)) // Poll every 5 minutes
-        ).handle(message -> {
-            // Processing handler placeholder
-        }).get();
-    }
-}
+def init_scheduler(app):
+    scheduler = BackgroundScheduler()
+    # Poll every 5 minutes
+    scheduler.add_job(email_polling_job, 'interval', minutes=5, id='email_poll_job')
+    scheduler.start()
+    return scheduler
+```
+
+3. Modify `apps/backend/app/__init__.py` to initialize the scheduler:
+```python
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from config import Config
+from app.scheduler import init_scheduler
+
+db = SQLAlchemy()
+
+def create_app():
+    app = Flask(__name__)
+    app.config.from_object(Config)
+    db.init_app(app)
+
+    # Initialize background scheduler (skip in testing mode)
+    if not app.config.get("TESTING"):
+        init_scheduler(app)
+
+    from app.routes.invoices import invoices_bp
+    app.register_blueprint(invoices_bp, url_prefix="/api/invoices")
+
+    return app
 ```
 
 **Step 3: Run test to verify passes**
 Run:
 ```powershell
-./gradlew test --tests com.example.ocr.config.MailReceiverConfigTest
+pytest apps/backend/tests/test_scheduler.py -v
 ```
 Expected: PASS
 
 **Step 4: Commit**
 ```bash
-git add apps/backend/src/main/resources/application-mail.yml apps/backend/src/main/java/com/example/ocr/config/MailReceiverConfig.java apps/backend/src/test/java/com/example/ocr/config/MailReceiverConfigTest.java
-git commit -m "feat: configure IMAP mail flow configuration adapter"
+git add apps/backend/app/scheduler/ apps/backend/app/__init__.py apps/backend/tests/test_scheduler.py
+git commit -m "feat: configure background APScheduler for email polling"
 ```
 
 ---
@@ -109,66 +120,55 @@ git commit -m "feat: configure IMAP mail flow configuration adapter"
 ### Task 3: Implement EmailIntakeService and Attachment Extraction
 
 **Files:**
-- Create: `apps/backend/src/main/java/com/example/ocr/service/EmailIntakeService.java`
-- Create: `apps/backend/src/test/java/com/example/ocr/service/EmailIntakeServiceTest.java`
+- Create: `apps/backend/app/services/email_intake_service.py`
+- Test: `apps/backend/tests/test_email_intake.py`
 
 **Step 1: Write failing test**
-Create a test that mocks `jakarta.mail.Message` containing a multipart body with a PDF attachment, and verifies that `EmailIntakeService.extractAttachments()` extracts it successfully.
+Create a test that mocks `imaplib.IMAP4_SSL` returning a multipart email containing a PDF attachment, and verifies that `EmailIntakeService.extract_attachments()` extracts it successfully.
 Run:
 ```powershell
-./gradlew test --tests com.example.ocr.service.EmailIntakeServiceTest
+pytest apps/backend/tests/test_email_intake.py -v
 ```
 Expected: FAIL
 
 **Step 2: Implement EmailIntakeService**
-Implement parsing logic to extract attachments from MultiPart emails and save them to a temporary path, then forward the temp file to the OCR processing queue.
-```java
-package com.example.ocr.service;
+Implement email fetching and file extraction:
+```python
+import os
+import imaplib
+import email
 
-import org.springframework.stereotype.Service;
-import jakarta.mail.Message;
-import jakarta.mail.MessagingException;
-import jakarta.mail.Multipart;
-import jakarta.mail.Part;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
+class EmailIntakeService:
+    def __init__(self, upload_dir):
+        self.upload_dir = upload_dir
 
-@Service
-public class EmailIntakeService {
-    public List<File> extractAttachments(Message message) throws MessagingException, IOException {
-        List<File> files = new ArrayList<>();
-        if (message.isMimeType("multipart/*")) {
-            Multipart multipart = (Multipart) message.getContent();
-            for (int i = 0; i < multipart.getCount(); i++) {
-                Part part = multipart.getBodyPart(i);
-                if (Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition())) {
-                    String fileName = part.getFileName();
-                    if (fileName.endsWith(".pdf") || fileName.endsWith(".png") || fileName.endsWith(".jpg")) {
-                        File tempFile = Files.createTempFile("email_ocr_", fileName).toFile();
-                        part.writeTo(Files.newOutputStream(tempFile.toPath()));
-                        files.add(tempFile);
-                    }
-                }
-            }
-        }
-        return files;
-    }
-}
+    def extract_attachments(self, msg):
+        files = []
+        for part in msg.walk():
+            if part.get_content_maintype() == 'multipart':
+                continue
+            if part.get('Content-Disposition') is None:
+                continue
+                
+            filename = part.get_filename()
+            if filename and (filename.endswith('.pdf') or filename.endswith('.png') or filename.endswith('.jpg')):
+                filepath = os.path.join(self.upload_dir, filename)
+                with open(filepath, 'wb') as f:
+                    f.write(part.get_payload(decode=True))
+                files.append(filepath)
+        return files
 ```
 
 **Step 3: Run test**
 Run:
 ```powershell
-./gradlew test --tests com.example.ocr.service.EmailIntakeServiceTest
+pytest apps/backend/tests/test_email_intake.py -v
 ```
 Expected: PASS
 
 **Step 4: Commit**
 ```bash
-git add apps/backend/src/main/java/com/example/ocr/service/EmailIntakeService.java apps/backend/src/test/java/com/example/ocr/service/EmailIntakeServiceTest.java
+git add apps/backend/app/services/email_intake_service.py apps/backend/tests/test_email_intake.py
 git commit -m "feat: implement email intake attachment extraction service"
 ```
 
